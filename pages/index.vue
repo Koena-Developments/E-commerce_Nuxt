@@ -8,30 +8,19 @@
         @remove-product="removeProduct"
       />
     </div>
-
-    <!-- <div>
-       <div class="product-view">
-        <div v-for="product in products" :key="product.id">   
-            <NuxtLink :to="`/products/${product.id}`">{{ product.title}}</NuxtLink>
-            <img :src="product.image" alt="{{ product.title}}">
-        </div>
-       </div>
-    </div> -->
 </template>
 
 
 
 <script setup>
-import {ref, computed} from 'vue'
-definePageMeta({
-    layout: 'default'
-})
+import {ref, computed, onMounted} from 'vue'
+
 
 
 const fakestore = ref([])
 const cart = ref([])
-const total = ref(0)
 const searchTerm = ref('')
+const counter = ref(0)
 
 
 const filteredProducts = computed(() => {
@@ -39,18 +28,30 @@ const filteredProducts = computed(() => {
     return fakestore.value.filter(product => product.title.toLowerCase().includes(term))
 })
 
-
 // the key is data and the val will be stored in products
- const {data: products} =  await useFetch('https://fakestoreapi.com/products')
-fakestore.value = products.value
+
+//fetching our data and sharing its data into the fakestore array
+const fetchProducts = async () => {
+    const { data: products } = await useFetch('https://fakestoreapi.com/products')
+    fakestore.value = products.value 
+}
 
 const addToCart=(product)=>{
-    cart.value.push(product)
+    if(product.id in cart){
+        counter.value +=1
+        cart.value.push(product)
+    }
+}
+const removeProduct =(product) =>{
+    const index = cart.value.indexOf(product)
+    if(index > -1){
+    cart.value.split(index,1)
+    }
 }
 
-const removeProduct=(product)=>{
-    cart.value.pop(product.id)
-}
+onMounted(() => {
+    fetchProducts()
+})
 </script>
 
 <style scoped>
