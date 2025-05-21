@@ -27,7 +27,6 @@
 </template>
 
 <script setup>
-
 defineProps({
   product: Object
 })

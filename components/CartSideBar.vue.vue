@@ -4,7 +4,7 @@
       <h3>Your Cart</h3>
       <button class="close-btn" @click="$emit('close-cart')">✖</button>
     </div>
-
+      
     <div class="cart-body">
       <div v-for="item in cart" :key="item.id" class="cart-item">
         <img :src="item.image" class="item-image" />

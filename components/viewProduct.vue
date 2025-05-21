@@ -23,16 +23,17 @@
         
         <div class="buttons">
           <button @click="addToCart(product)">
-            Add To Cart
+             <i class="fas fa-cart-plus"></i>
+          </button>
+        </div>
+            <!-- Add To Cart
             <span>
               <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M6 15a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm0 0h8m-8 0-1-4m9 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-9-4h10l2-7H3m2 7L3 4m0 0-.792-3H1" />
               </svg>
-            </span>
-          </button>
-        
-        </div>
+            </span> -->
+          
         <div class="description">{{ product.description }}</div>
       </div>
     </div>
@@ -63,21 +64,20 @@
       </div>
     </div>  -->
 
-    <div class="cartTab">
       <CartSideBar
         :cart="cart"
         :visible="true"
-        :total="total"
+        :total="calculateTotal()"
         @close-cart="cartVisible=false"
         @increase="increaseQuantity"
         @decrease="decreaseQuantity"
       />
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch,defineProps } from 'vue'
+import CartSideBar from '~/components/CartSidebar.vue'
 import { useRoute } from 'vue-router'
 
 const props = defineProps(
@@ -149,6 +149,7 @@ const clearCart = () =>
   total.value=0;
   document.body.classList.remove('activeTabCart')
 }
+
 const checkout = () => {
   if (!cart.value.length) {
     return alert('Cart is empty')
@@ -218,7 +219,13 @@ header {
   align-items: center;
   padding: 20px 0;
 }
-
+i:hover{
+  animation: move 0.2s infinite;
+}
+  @keyframes move {
+    0% { transform: rotate(12deg); }
+  100% { transform: rotate(-12deg); }
+  }
 
 .icon-cart {
   position: relative;
@@ -300,6 +307,7 @@ img {
   font-family: Poppins;
   font-size: 1em;
   cursor: pointer;
+  
   transition: background-color 0.3s ease;
 }
 
