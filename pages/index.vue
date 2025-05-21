@@ -9,15 +9,27 @@
       @view-product="viewProduct"  
     />
   </div>
+
+
+  <CartSidebar
+    :cart="cart"
+    :visible="cartVisible"
+    :total="cartTotal"
+    @close-cart="cartVisible = false"
+    @increase="increaseQuantity"
+    @decrease="decreaseQuantity"
+  />
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import RevisedproductCard from '~/components/revisedproductCard.vue'
+import CartSidebar from '~/components/CartSidebar.vue'
 
 const fakestore = ref([])
 const cart = ref([])
 const searchTerm = ref('')
+const cartVisible = ref(false)
 
 const filteredProducts = computed(() => {
   const term = searchTerm.value.toLowerCase()
@@ -38,10 +50,14 @@ const fetchProducts = async () => {
   }
 }
 
-  const addToCart = (product) => {
-  if (!cart.value.find(p => p.id === product.id)) {
-    cart.value.push(product)
+const addToCart = (product) => {
+  const existing = cart.value.find(p => p.id === product.id)
+  if (existing) {
+    existing.quantity++
+  } else {
+    cart.value.push({ ...product, quantity: 1 })
   }
+  cartVisible.value = true
 }
 
 
@@ -50,8 +66,29 @@ const removeProduct = (product) => {
   if (index > -1) {
     cart.value.splice(index, 1)
   }
+   if (cart.value.length === 0) cartVisible.value = false
 }
 
+
+const viewProduct = (product) => {
+  alert(`View: ${product.title}`)
+}
+
+const increaseQuantity = (product) => {
+  product.quantity++
+}
+
+const decreaseQuantity = (product) => {
+  if (product.quantity > 1) {
+    product.quantity--
+  } else {
+    removeProduct(product)
+  }
+}
+
+const cartTotal = computed(() =>
+  cart.value.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)
+)
 onMounted(fetchProducts)
 </script>
 
