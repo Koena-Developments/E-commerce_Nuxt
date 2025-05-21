@@ -1,19 +1,19 @@
 <template>
-    <div>
-        <h2>product page this is product ID: {{ id }}</h2>
-        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Commodi aliquid laudantium saepe similique aspernatur voluptate omnis, aut debitis nulla animi dolores voluptas est repudiandae sed minus et. At, culpa alias.</p>
-    </div>
+  <div>
+    <ProductDetail :id="productId" />
+  </div>
 </template>
 
 <script setup>
-const {id} = useRoute().params
+import { useRoute } from 'vue-router';
+import ProductDetail from '@/components/viewProduct.vue'; 
+
+const route = useRoute();
+const productId = route.params.id;
 definePageMeta({
-    layout:'products'
-})
-
-
+  layout: 'products'
+});
 </script>
 
 <style scoped>
-
 </style>

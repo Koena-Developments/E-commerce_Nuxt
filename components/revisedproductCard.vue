@@ -15,15 +15,19 @@
       <button class="action-button" @click="$emit('remove-product', product)">
         <i class="fas fa-trash"></i>
       </button>
-
+     
+      <NuxtLink :to="`/products/${product.id}`">
       <button class="action-button" @click="$emit('view-product', product)">
         <i class="fas fa-eye"></i>
       </button>
+      </NuxtLink>
+    
     </div>
   </div>
 </template>
 
 <script setup>
+
 defineProps({
   product: Object
 })

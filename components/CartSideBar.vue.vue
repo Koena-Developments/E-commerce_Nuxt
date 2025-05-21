@@ -11,7 +11,7 @@
         <div class="item-info">
           <p class="item-title">{{ item.title }}</p>
           <div class="quantity-controls">
-            <button @click="$emit('decrease', item)">−</button>
+            <button @click="$emit('decrease', item)">-</button>
             <span>{{ item.quantity }}</span>
             <button @click="$emit('increase', item)">+</button>
           </div>
@@ -20,7 +20,7 @@
     </div>
 
     <div class="cart-footer">
-      <p class="total">Total: ${{ total }}</p>
+      <p class="total">Total: R{{ total }}</p>
       <button class="checkout-btn">Checkout</button>
     </div>
   </div>

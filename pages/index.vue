@@ -1,15 +1,15 @@
 <template>
   <div class="listProduct">
+    
     <RevisedproductCard
       v-for="product in filteredProducts"
       :key="product.id"
       :product="product"
       @add-to-cart="addToCart"
       @remove-product="removeProduct"
-      @view-product="viewProduct"  
+      @view-product="viewProduct"
     />
   </div>
-
 
   <CartSidebar
     :cart="cart"
@@ -38,10 +38,9 @@ const filteredProducts = computed(() => {
   )
 })
 
-
 const fetchProducts = async () => {
-  const { data: products, error } = await useFetch('https://fakestoreapi.com/products')
-
+   const { data: products, error } = await useFetch('https://fakestoreapi.com/products')
+    console.log('products', products)
   if (error.value) {
     console.error('Fetch error:', error.value)
     fakestore.value = []
@@ -66,7 +65,8 @@ const removeProduct = (product) => {
   if (index > -1) {
     cart.value.splice(index, 1)
   }
-   if (cart.value.length === 0) cartVisible.value = false
+   if (cart.value.length === 0) 
+    cartVisible.value = false
 }
 
 
@@ -87,9 +87,17 @@ const decreaseQuantity = (product) => {
 }
 
 const cartTotal = computed(() =>
-  cart.value.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)
+  cart.value.reduce((sum, item) => sum + item.price * item.quantity, 0)
 )
-onMounted(fetchProducts)
+
+const cartTotalFloat = computed(() => parseFloat(cartTotal.value))
+
+onMounted (async () => {
+await fetchProducts()
+})
+
+
+
 </script>
 
 <style scoped>
