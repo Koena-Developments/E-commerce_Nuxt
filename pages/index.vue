@@ -1,4 +1,6 @@
 <template>
+
+<div>
   <div class="listProduct">
     
     <RevisedproductCard
@@ -19,6 +21,7 @@
     @increase="increaseQuantity"
     @decrease="decreaseQuantity"
   />
+  </div>
 </template>
 
 <script setup>
