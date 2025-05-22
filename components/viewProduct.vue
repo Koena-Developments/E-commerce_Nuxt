@@ -26,13 +26,6 @@
              <i class="fas fa-cart-plus"></i>
           </button>
         </div>
-            <!-- Add To Cart
-            <span>
-              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M6 15a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm0 0h8m-8 0-1-4m9 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-9-4h10l2-7H3m2 7L3 4m0 0-.792-3H1" />
-              </svg>
-            </span> -->
           
         <div class="description">{{ product.description }}</div>
       </div>
@@ -48,22 +41,12 @@
         <NuxtLink :to="`/products/${sim.id}`"><button>View</button></NuxtLink>
       </div>
     </div>
-    
-    <!-- <div class="cartTab">
-      <h1>Shopping Cart</h1>
-      <div class="listCart">
-        <div class="item" v-for="item in cart" :key="item.id">
-          <img :src="item.image" alt="Product image" />
-          <div>{{ item.title }}</div>
-          <div>R{{ item.price }}</div>
-        </div>
-      </div>
-      <div class="btn">
-        <button class="close" @click="clearCart">CLOSE</button>
-        <button class="checkOut" @click="checkout">Check Out</button>
-      </div>
-    </div>  -->
 
+
+
+
+
+    <!--Testing the new one -->
       <CartSideBar
         :cart="cart"
         :visible="true"
@@ -81,7 +64,10 @@ import CartSideBar from '~/components/CartSidebar.vue'
 import { useRoute } from 'vue-router'
 
 const props = defineProps(
-  { id: { type: [String, Number], required: true }
+  { id: 
+    { type: [String, Number], 
+      required: true 
+    }
 })
 
 const product = ref(null)

@@ -1,13 +1,15 @@
 <template>
   <div class="landing">
     <h1>Products World</h1>
-    <ProductSlider :products="products" />
+    <ProductShow :products="products" />
+
+
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import ProductSlider from '~/components/ProductSlider.vue'
+import ProductShow from '~/components/ProductShowRoom.vue'
 
 const products = ref([])
 

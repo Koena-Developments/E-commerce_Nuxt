@@ -1,9 +1,6 @@
 <template>
-
-<div>
   <div class="listProduct">
-    
-    <RevisedproductCard
+    <ProductCard
       v-for="product in filteredProducts"
       :key="product.id"
       :product="product"
@@ -21,12 +18,12 @@
     @increase="increaseQuantity"
     @decrease="decreaseQuantity"
   />
-  </div>
+
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import RevisedproductCard from '~/components/revisedproductCard.vue'
+import ProductCard from '~/components/ProductCard.vue'
 import CartSidebar from '~/components/CartSidebar.vue'
 
 const fakestore = ref([])
@@ -64,7 +61,7 @@ const addToCart = (product) => {
 
 
 const removeProduct = (product) => {
-  const index = cart.value.indexOf(product)
+  const index = cart.value.indexOf(product) 
   if (index > -1) {
     cart.value.splice(index, 1)
   }
@@ -72,10 +69,6 @@ const removeProduct = (product) => {
     cartVisible.value = false
 }
 
-
-const viewProduct = (product) => {
-  alert(`View: ${product.title}`)
-}
 
 const increaseQuantity = (product) => {
   product.quantity++
@@ -108,5 +101,14 @@ await fetchProducts()
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
+}
+
+@media (max-width: 800px)
+{
+  .listProduct
+  {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+  }
 }
 </style>

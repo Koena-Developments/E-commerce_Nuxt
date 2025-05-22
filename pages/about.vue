@@ -12,7 +12,7 @@
       <h2>Our Story</h2>
       <p>
         Founded in 2022 by a group of web-obsessed friends, we started with a simple idea:
-        make online shopping joyful and reliable. Since then, we’ve grown into a
+        make online shopping joyful and reliable. Since then, we've grown into a
         small but mighty team of designers, developers, and dreamers.
       </p>
     </div>
@@ -43,10 +43,10 @@ definePageMeta({
 })
 
 const team = [
-  { id: 1, name: 'Alice Johnson', role: 'Co-Founder & CEO', photo: '/team/alice.jpg' },
-  { id: 2, name: 'Ben Roberts', role: 'Lead Developer', photo: '/team/ben.jpg' },
-  { id: 3, name: 'Cara Lee', role: 'Head of Design', photo: '/team/cara.jpg' },
-  { id: 4, name: 'David Kim', role: 'Marketing Director', photo: '/team/david.jpg' }
+  { id: 1, name: 'Trent FisherMan', role: 'Lead Developer', photo: '/team/trent.jpg' },
+  { id: 2, name: 'Taylon Cordae', role: 'Head of Design', photo: '/team/Tay.jpg' },
+  { id: 3, name: 'Thabang Motswenyane', role: 'The Intern', photo: '/team/Thabang.jpg' },
+  { id: 4, name: 'Michael Bolton', role: 'Marketing Director', photo: '/team/pluto.jpg' }
 ]
 
 const router = useRouter()
@@ -61,7 +61,6 @@ const goContact = () => router.push('/')
   line-height: 1.6;
 }
 
-/* Hero */
 .hero {
   text-align: center;
   margin-bottom: 60px;
@@ -75,7 +74,6 @@ const goContact = () => router.push('/')
   color: #555;
 }
 
-/* Story */
 .story {
   margin-bottom: 60px;
 }
@@ -87,7 +85,6 @@ const goContact = () => router.push('/')
   color: #444;
 }
 
-/* Team */
 .team {
   margin-bottom: 60px;
 }
@@ -121,7 +118,6 @@ const goContact = () => router.push('/')
   color: #777;
 }
 
-/* CTA */
 .cta {
   text-align: center;
   padding: 40px 0;
@@ -145,7 +141,6 @@ const goContact = () => router.push('/')
   background-color: #0056b3;
 }
 
-/* Responsive adjustments */
 @media (max-width: 600px) {
   .hero h1 { font-size: 2.4rem; }
   .story h2,

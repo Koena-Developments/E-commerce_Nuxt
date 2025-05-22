@@ -15,7 +15,6 @@
 <script setup>
 import { ref } from 'vue'
 import ProductCard from '~/components/ProductCard.vue'
-
 defineProps({
   products: {
     type: Array,
@@ -43,10 +42,9 @@ const scroll = (dir) => {
   overflow-x: auto;
   scroll-behavior: smooth;
   gap: 16px;
-  padding: 0 40px; /* space for arrows */
+  padding: 0 40px;
   scrollbar-width: none;
 }
-/* hide scrollbar */
 .slider-track::-webkit-scrollbar { display: none; }
 
 .arrow {
@@ -63,8 +61,15 @@ const scroll = (dir) => {
   cursor: pointer;
   border-radius: 4px;
 }
-.arrow.left  { left: 8px;  }
-.arrow.right { right: 8px; }
+.arrow.left  { 
+  left: 8px;
+  }
+.arrow.right
+ {
+   right: 8px;
+}
+
+
 .arrow:hover {
   background: rgba(0, 123, 255, 0.8);
   color: white;
