@@ -42,10 +42,6 @@
       </div>
     </div>
 
-
-
-
-
     <!--Testing the new one -->
       <CartSideBar
         :cart="cart"

@@ -99,16 +99,13 @@ await fetchProducts()
 <style scoped>
 .listProduct {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 15px; 
 }
 
-@media (max-width: 800px)
-{
-  .listProduct
-  {
-    display: grid;
-    grid-template-columns: repeat(3,1fr);
+@media (max-width: 800px) {
+  .listProduct {
+    grid-template-columns: repeat(3, 1fr); 
   }
 }
 </style>

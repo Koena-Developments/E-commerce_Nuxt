@@ -37,14 +37,20 @@ defineEmits(['add-to-cart', 'remove-product', 'view-product'])
 <style scoped>
 .product-card {
   position: relative;
-  padding: 16px;
+  padding: 0 10px 0;
   border: 1px solid #ddd;
   transition: 0.3s ease;
   overflow: hidden;
+  margin-top: 20px;
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow:0 15px 5px rgb(219, 208, 208);
 }
 
 .product-image {
-  width: 100%;
+  width: 60%;
   height: 200px;
   object-fit: contain;
 }
@@ -55,16 +61,35 @@ defineEmits(['add-to-cart', 'remove-product', 'view-product'])
 
 .hover-slider {
   position: absolute;
-  bottom: 16px;
   left: 50%;
-  transform: translateX(-50%);
+  bottom: 0;
+  transform: translate(-50%, 30px);
   display: flex;
+  justify-content: center;
   gap: 10px;
-  opacity: 0;
-  transition: 0.3s ease;
+  opacity: 0.2;
+  background: rgb(214, 210, 210);
+  width: 100%;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  border-radius: 15px 15px 0 2px;
 }
 
 .product-card:hover .hover-slider {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@keyframes slideup {
+  from {
+    transform: translate(-50%, 30px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+.product-card:hover  {
   opacity: 1;
 }
 
@@ -78,6 +103,6 @@ defineEmits(['add-to-cart', 'remove-product', 'view-product'])
 }
 
 .action-button:hover {
-  box-shadow: 0 0 10px #00f;
+  box-shadow: 0 0 10px rgb(74, 92, 24);
 }
 </style>

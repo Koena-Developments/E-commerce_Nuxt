@@ -12,7 +12,7 @@
           <div class="description">
             <p>{{ product.description }}</p>
           </div>
-          <button>See More</button>
+          <NuxtLink :to="`/products/${product.id}`"><button>View Product</button></NuxtLink>
         </div>
       </div>
     </div>
