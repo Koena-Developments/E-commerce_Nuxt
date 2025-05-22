@@ -52,6 +52,7 @@
         @close-cart="cartVisible=false"
         @increase="increaseQuantity"
         @decrease="decreaseQuantity"
+        @checkingout="checkout"
       />
   </div>
 </template>

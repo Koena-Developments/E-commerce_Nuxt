@@ -21,7 +21,7 @@
 
     <div class="cart-footer">
       <p class="total">Total: R{{ total }}</p>
-      <button class="checkout-btn">Checkout</button>
+      <button @click="$emit('checkingout')" class="checkout-btn">Checkout</button>
     </div>
   </div>
 </template>
