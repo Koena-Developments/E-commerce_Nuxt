@@ -1,6 +1,6 @@
 <template>
   <div class="product-card">
-    <img :src="product.image" :alt="product.title" class="product-image" />
+    <NuxtLink :to="`/products/${product.id}`"><img :src="product.image" :alt="product.title" class="product-image" /></NuxtLink>
 
     <div class="product-info">
       <h3 class="product-title">{{ product.title }}</h3>
@@ -50,9 +50,13 @@ defineEmits(['add-to-cart', 'remove-product', 'view-product'])
 }
 
 .product-image {
-  width: 60%;
+  width: 100%;
   height: 200px;
   object-fit: contain;
+  transition: transform 0.3s cubic-bezier(0.4, 0.5, 0.2, 1);
+}
+.product-image:hover{
+  transform: rotate(10deg);
 }
 
 .product-info {
@@ -67,8 +71,8 @@ defineEmits(['add-to-cart', 'remove-product', 'view-product'])
   display: flex;
   justify-content: center;
   gap: 10px;
-  opacity: 0.2;
-  background: rgb(214, 210, 210);
+  opacity: 0;
+  background: rgb(235, 235, 235);
   width: 100%;
   transition: opacity 0.3s ease, transform 0.3s ease;
   border-radius: 15px 15px 0 2px;
@@ -94,7 +98,6 @@ defineEmits(['add-to-cart', 'remove-product', 'view-product'])
 }
 
 .action-button {
-  border: none;
   border-radius: 50%;
   padding: 10px;
   background-color: #f0f0f0;
@@ -103,6 +106,6 @@ defineEmits(['add-to-cart', 'remove-product', 'view-product'])
 }
 
 .action-button:hover {
-  box-shadow: 0 0 10px rgb(74, 92, 24);
+  box-shadow: 0 0 10px #0157b3;
 }
 </style>

@@ -139,5 +139,10 @@ defineEmits(['close-cart', 'increase', 'decrease'])
   font-weight: bold;
   border-radius: 5px;
   cursor: pointer;
+  transition: background 0.6s;
+}
+
+.checkout-btn:hover{
+  background:#0157b3;
 }
 </style>

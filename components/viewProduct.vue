@@ -43,10 +43,12 @@
     </div>
 
     <!--Testing the new one -->
+
+    <!-- fine it works but then you need to implement the stripe integrated checkout method with the logic -->
       <CartSideBar
         :cart="cart"
-        :visible="true"
-        :total="calculateTotal()"
+        :visible="cartVisible"
+        :total="total"
         @close-cart="cartVisible=false"
         @increase="increaseQuantity"
         @decrease="decreaseQuantity"
@@ -98,10 +100,9 @@ const fetchSimilar = async () => {
   similarProducts.value = all.filter(p => p.category === product.value.category && p.id !== product.value.id).slice(0,4)
 }
 
-const calculateTotal = () => 
-{
-   total.value = cart.value.reduce((sum,p) => sum + p.price, 0)
-}
+watch(cart, (newCart) => {
+  total.value = newCart.reduce((sum, p) => sum + (p.price * (p.quantity || 1)), 0)
+}, { deep: true })
 
 const addToCart = (product) => {
   const existing = cart.value.find(p => p.id === product.id)
@@ -281,7 +282,7 @@ img {
 }
 
 .buttons button {
-  background-color: #f0c14b;
+  background-color:   #007BFF;
   color: #333;
   border: none;
   padding: 12px 20px;
@@ -289,12 +290,11 @@ img {
   font-family: Poppins;
   font-size: 1em;
   cursor: pointer;
-  
   transition: background-color 0.3s ease;
 }
 
 .buttons button:hover {
-  background-color: #ddb347;
+  background-color:  #0157b3;
 }
 
 .buttons svg {
@@ -348,7 +348,7 @@ img {
 }
 
 .listProduct .item button {
-  background-color: #f0c14b;
+  background-color: #007BFF;
   color: white;
   border: none;
   padding: 8px 10px;
@@ -360,7 +360,7 @@ img {
 }
 
 .listProduct .item button:hover {
-  background-color: #ddb347;
+  background-color: #0157b3;
 }
 
 .cartTab {
