@@ -7,9 +7,11 @@
       @add-to-cart="addToCart"
       @remove-product="removeProduct"
       @view-product="viewProduct"
-    />
+    /> 
   </div>
-
+    
+    <Footer />
+  
   <CartSidebar
     :cart="cart"
     :visible="cartVisible"
