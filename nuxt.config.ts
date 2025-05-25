@@ -4,5 +4,5 @@ export default defineNuxtConfig({
   css: [
     '@fortawesome/fontawesome-free/css/all.min.css'
   ],
-  modules: ['@nuxt/fonts'],
+  modules: ['@nuxt/fonts', '@sidebase/nuxt-auth'],
 })
