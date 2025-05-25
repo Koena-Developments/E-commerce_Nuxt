@@ -1,111 +1,63 @@
 <template>
   <div class="product-card">
-    <NuxtLink :to="`/products/${product.id}`"><img :src="product.image" :alt="product.title" class="product-image" /></NuxtLink>
-
-    <div class="product-info">
-      <h3 class="product-title">{{ product.title }}</h3>
-      <p class="product-price">R{{ product.price }}</p>
-    </div>
-
-    <div class="hover-slider">
-      <button class="action-button" @click="$emit('add-to-cart',product)">
-        <i class="fas fa-cart-plus"></i>
-      </button>
-
-      <button class="action-button" @click="$emit('remove-product', product)">
-        <i class="fas fa-trash"></i>
-      </button>
-     
-      <NuxtLink :to="`/products/${product.id}`">
-      <button class="action-button" @click="$emit('view-product', product)">
-        <i class="fas fa-eye"></i>
-      </button>
-      </NuxtLink>
-    
-    </div>
+    <nuxt-link :to="`/products/${product.id}`"><img :src="product.image" :alt="product.title" /></nuxt-link>
+    <h3>{{ product.title }}</h3>
+    <p>R{{ product.price }}</p>
+    <button @click="$emit('add-to-cart', product)">Add to Cart</button>
   </div>
 </template>
 
 <script setup>
-defineProps({
-  product: Object
-})
-
-defineEmits(['add-to-cart', 'remove-product', 'view-product'])
+defineProps(['product'])
 </script>
 
 <style scoped>
 .product-card {
-  position: relative;
-  padding: 0 10px 0;
-  border: 1px solid #ddd;
-  transition: 0.3s ease;
-  overflow: hidden;
-  margin-top: 20px;
-  width: 80%;
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  text-align: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  box-shadow:0 15px 5px rgb(219, 208, 208);
+  justify-content: space-between;
+  transition: transform 0.3s ease;
 }
 
-.product-image {
-  width: 100%;
-  height: 200px;
+.product-card:hover {
+  transform: scale(1.03);
+}
+
+.product-card img {
+  max-width: 100px;
+  max-height: 120px;
   object-fit: contain;
-  transition: transform 0.3s cubic-bezier(0.4, 0.5, 0.2, 1);
-}
-.product-image:hover{
-  transform: rotate(10deg);
+  margin: 0 auto 10px;
 }
 
-.product-info {
-  text-align: center;
+.product-card h3 {
+  font-size: 0.9rem;
+  margin: 10px 0;
+  height: 40px;
+  overflow: hidden;
 }
 
-.hover-slider {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  transform: translate(-50%, 30px);
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  opacity: 0;
-  background: rgb(235, 235, 235);
-  width: 100%;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  border-radius: 15px 15px 0 2px;
+.product-card p {
+  font-weight: bold;
+  color: #333;
 }
 
-.product-card:hover .hover-slider {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
-@keyframes slideup {
-  from {
-    transform: translate(-50%, 30px);
-    opacity: 0;
-  }
-  to {
-    transform: translate(-50%, 0);
-    opacity: 1;
-  }
-}
-.product-card:hover  {
-  opacity: 1;
-}
-
-.action-button {
-  border-radius: 50%;
-  padding: 10px;
-  background-color: #f0f0f0;
+.product-card button {
+  margin-top: auto;
+  background-color: #ec008c;
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 20px;
   cursor: pointer;
-  transition: box-shadow 0.3s ease;
+  font-size: 0.85rem;
 }
-
-.action-button:hover {
-  box-shadow: 0 0 10px #0157b3;
+.product-card button:hover {
+  background-color: #c70074;
 }
 </style>

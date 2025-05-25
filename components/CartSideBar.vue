@@ -21,7 +21,7 @@
     <p v-else class="empty-msg">Your cart is empty.</p>
 
     <footer class="cart-footer">
-      <p class="total">Total: ${{ total }}</p>
+      <p class="total">Total: R{{ total }}</p>
       <button class="checkout-btn" @click="$emit('checkingout')">Checkout</button>
     </footer>
   </aside>
@@ -39,14 +39,15 @@ defineEmits(['close-cart','increase','decrease','checkingout'])
 <style scoped>
 .cart-sidebar {
   position: fixed;
-  top: 0; right: 0;
+  top: 0; 
+  right: 0;
   width: 350px;
   height: 100%;
   background: #fff;
   box-shadow: -4px 0 8px rgba(0,0,0,0.1);
   transform: translateX(100%);
   transition: transform 0.3s ease;
-  z-index: 20;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
 }
@@ -111,11 +112,14 @@ defineEmits(['close-cart','increase','decrease','checkingout'])
 .checkout-btn {
   width: 100%;
   padding: 10px;
-  background: #007bff;
+  background: #ec008c;
   border: none;
   color: #fff;
   border-radius: 4px;
   cursor: pointer;
 }
-.checkout-btn:hover { background: #0056b3; }
+.checkout-btn:hover 
+{
+   background: #a50364; 
+   }
 </style>

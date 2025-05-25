@@ -1,5 +1,5 @@
 <template>
-  <div class="page-wrapper" :class="{ 'filter-open': filterVisible, 'cart-open': cartVisible }">
+  <div class="page-wrapper" :class="{ 'filter-open': filterVisible, 'visible':visible, 'cart-open': cartVisible }">
 
     <FilterSidebar
       :categories="categories"
@@ -9,13 +9,20 @@
       @toggle="filterVisible = !filterVisible"
     />
 
+
+    
     <!-- Main Product Grid -->
+    
     <main class="content-area">
       <div class="toolbar">
         <button class="btn" @click="filterVisible = !filterVisible">
           {{ filterVisible ? 'Hide Filters' : 'Show Filters' }}
         </button>
       </div>
+        <!-- <main class="content-area">
+      <HeroSection v-model="searchTerm" />
+    </main> -->
+
       <div class="listProduct">
         <ProductCard
           v-for="product in filteredProducts"
@@ -38,7 +45,10 @@
       @decrease="decreaseQuantity"
       @checkingout="checkout"
     />
-  </div>
+
+
+    <footer />
+        </div>
 </template>
 
 <script setup>
@@ -46,13 +56,16 @@ import { ref, computed, onMounted } from 'vue'
 import ProductCard from '~/components/ProductCard.vue'
 import FilterSidebar from '~/components/FilterSidebar.vue'
 import CartSidebar from '~/components/CartSideBar.vue'
+import footer  from '~/components/footer.vue'
+import HeroSection from '~/components/hero-section.vue'
+
 
 const fakestore = ref([])
 const cart = ref([])
 const filterVisible = ref(false)
 const cartVisible = ref(false)
-
-const categories = ['All', 'Clothing', 'Electronics', 'Home', 'Toys']
+const searchTerm = ref('')
+const categories = ['All', 'Clothing', 'Electronics']
 const selectedCategory = ref('All')
 
 const fetchProducts = async () => {
@@ -68,8 +81,16 @@ const filteredProducts = computed(() => {
   if (selectedCategory.value !== 'All') {
     prods = prods.filter(p => p.category.toLowerCase() === selectedCategory.value.toLowerCase())
   }
+  
+  if(searchTerm.value){
+    const lowerCaseSearchTerm = searchTerm.value.toLocaleLowerCase();
+    prods = prods.filter(p=> p.title.toLowerCase().include*lowerCaseSearchTerm) || p.description.toLowerCase().includes(lowerCaseSearchTerm);
+  }
+  
   return prods
+
 })
+
 
 const selectCategory = (cat) => {
   selectedCategory.value = cat
@@ -89,7 +110,9 @@ const removeProduct = (product) => {
   cart.value = cart.value.filter(p => p.id !== product.id)
   if (!cart.value.length) cartVisible.value = false
 }
-const increaseQuantity = (product) => { product.quantity++ }
+const increaseQuantity = (product) => {
+   product.quantity++ 
+  }
 const decreaseQuantity = (product) => {
   if (product.quantity > 1) product.quantity--
   else removeProduct(product)
@@ -113,9 +136,10 @@ const checkout = () => {
   display: flex;
   position: relative;
   transition: transform 0.3s ease;
+  overflow: hidden;
 }
-.page-wrapper.filter-open { transform: translateX(200px); }
-.page-wrapper.cart-open   { transform: translateX(-350px); }
+/* .page-wrapper.filter-open { transform: translateX(200px); } */
+/* .page-wrapper.cart-open   { transform: translateX(-60px); } */
 
 .content-area {
   flex-grow: 1;
