@@ -6,6 +6,9 @@ export const useMyProductStoreStore = defineStore('useProductStore', () => {
   const selectedCategory = ref('All')
   const searchTerm = ref('')
   const product = ref([])
+  const filterVisible = ref(false)
+  const categories = ['All', 'Clothing', 'Electronics']
+  const cart = ref()
   // const cart= ref([])
   // cartVisible = ref(false)
 
@@ -16,30 +19,22 @@ export const useMyProductStoreStore = defineStore('useProductStore', () => {
     }
   }
   
-  // const filteredProducts = computed(() => {
-  //   let prods = fakestore.value
-  //   if (selectedCategory.value !== 'All') {
-  //     prods = prods.filter(p => p.category.toLowerCase() === selectedCategory.value.toLowerCase())
-  //   }
+const selectCategory = (category) => {
+  selectedCategory.value = category
+  filterVisible.value = false 
+  // return category
+}
 
-  //   if (searchTerm.value) {
-  //     const lowerCaseSearchTerm = searchTerm.value.toLowerCase();
-  //     prods = prods.filter(
-  //       p =>
-  //         p.title.toLowerCase().includes(lowerCaseSearchTerm) ||
-  //         p.description.toLowerCase().includes(lowerCaseSearchTerm)
-  //     );
-  //   }
-  //   return prods
-  // })
 
   return {
     fakestore,
     selectedCategory,
     searchTerm,
     fetchProducts,
-    product
-
+    product,
+    selectCategory,
+    categories,
+    filterVisible
   }
 })
 
