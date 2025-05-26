@@ -283,7 +283,7 @@ img {
 }
 
 .buttons button {
-  background-color:   #007BFF;
+  background-color:   #ec008c;
   color: #333;
   border: none;
   padding: 12px 20px;
@@ -295,7 +295,7 @@ img {
 }
 
 .buttons button:hover {
-  background-color:  #0157b3;
+  background-color:  #a5116a;
 }
 
 .buttons svg {

@@ -1,26 +1,21 @@
 <template>
   <div class="landing">
     <h1>Products World</h1>
-    <ProductShow :products="products" />
-
-
+    <ProductShow :products="fakestore" />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import ProductShow from '~/components/ProductShowRoom.vue'
+import { useMyProductStoreStore } from '~/stores/productStore'
 
-const products = ref([])
+const {fetchProducts} = useMyProductStoreStore()
+const {fakestore} = storeToRefs(useMyProductStoreStore())
 
-const fetchProducts = async () => {
-  const { data, error } = await useFetch('https://fakestoreapi.com/products')
-  if (!error.value) {
-    products.value = data.value || []
-  }
-}
-
-onMounted(fetchProducts)
+onMounted(() => {
+ fetchProducts()
+})
 </script>
 
 <style scoped>
