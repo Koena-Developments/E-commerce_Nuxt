@@ -7,10 +7,13 @@ export const useMyProductStoreStore = defineStore('useProductStore', () => {
   const searchTerm = ref('')
   const product = ref([])
   const filterVisible = ref(false)
-  const categories = ['All', 'Clothing', 'Electronics']
-  const cart = ref()
-  // const cart= ref([])
-  // cartVisible = ref(false)
+  const categories = ref(['All', 'Clothing', 'Electronics'])
+  const cart = ref([])
+  const cartVisible = ref(false)
+  const visible = ref(false);
+
+
+
 
   const fetchProducts = async () => {
     const { data: products, error } = await useFetch('https://fakestoreapi.com/products')
@@ -22,9 +25,45 @@ export const useMyProductStoreStore = defineStore('useProductStore', () => {
 const selectCategory = (category) => {
   selectedCategory.value = category
   filterVisible.value = false 
-  // return category
 }
+// Cart actions
+const addToCart = (product) => {
+  const existing = cart.value.find(p => p.id === product.id);
+  if (existing) {
+    existing.quantity++;
+  } else {
+    cart.value.push({ ...product, quantity: 1 });
+  }
+  cartVisible.value = true;
+};
 
+const removeProduct = (product) => {
+  cart.value = cart.value.filter(p => p.id !== product.id);
+  if (!cart.value.length) cartVisible.value = false;
+};
+
+const increaseQuantity = (product) => {
+  product.quantity++;
+};
+
+const decreaseQuantity = (product) => {
+  if (product.quantity > 1) product.quantity--;
+  else removeProduct(product);
+};
+
+const cartTotal = computed(() =>
+  cart.value.reduce((sum, i) => sum + i.price * i.quantity, 0).toFixed(2)
+);
+
+
+
+// Checkout
+const checkout = () => {
+  if (!cart.value.length) return alert('Cart is empty');
+  alert(`Checking out ${cart.value.length} items - total $${cartTotal.value}`);
+  cart.value = [];
+  cartVisible.value = false;
+};
 
   return {
     fakestore,
@@ -34,7 +73,16 @@ const selectCategory = (category) => {
     product,
     selectCategory,
     categories,
-    filterVisible
+    filterVisible,
+    addToCart,
+    cart,
+    cartVisible,
+    removeProduct,
+    increaseQuantity,
+    decreaseQuantity,
+    cartTotal,
+    checkout,
+    visible
   }
 })
 

@@ -18,6 +18,10 @@
 </template>
 
 <script setup lang="ts">
+import {useMyProductStoreStore} from '~/stores/productStore'
+
+const myProductStore = useMyProductStoreStore()
+const {categories, seleced, visible} = myProductStore
 defineProps<{
   categories: string[]
   selected: string

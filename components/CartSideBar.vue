@@ -11,7 +11,8 @@
         <div class="item-info">
           <p class="item-title">{{ item.title }}</p>
           <div class="quantity-controls">
-            <button @click="$emit('decrease', item)">−</button>
+          
+            <button @click="$emit('decrease', item)">-</button>
             <span>{{ item.quantity }}</span>
             <button @click="$emit('increase', item)">+</button>
           </div>

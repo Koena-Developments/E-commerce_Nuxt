@@ -1,5 +1,8 @@
 <template>
-  <div class="page-wrapper" :class="{ 'filter-open': filterVisible, 'visible':visible, 'cart-open': cartVisible }">
+  <div
+    class="page-wrapper"
+    :class="{ 'filter-open': filterVisible, 'visible': visible, 'cart-open': cartVisible }"
+  >
     <FilterSidebar
       :categories="categories"
       :selected="selectedCategory"
@@ -37,8 +40,9 @@
       @checkingout="checkout"
     />
 
-    <Thefooter />
   </div>
+    <Thefooter />
+
 </template>
 
 <script setup>
@@ -51,72 +55,38 @@ import FilterSidebar from '~/components/FilterSidebar.vue';
 import CartSidebar from '~/components/CartSideBar.vue';
 import Thefooter from '~/components/Thefooter.vue';
 
-
 const myProductStore = useMyProductStoreStore();
+const { fakestore, searchTerm, selectedCategory, filterVisible, categories, cart, cartVisible, cartTotal, visible} = storeToRefs(myProductStore);
+const { fetchProducts, selectCategory, addToCart, removeProduct, increaseQuantity, decreaseQuantity, checkout} = myProductStore;
 
-const { fakestore, searchTerm, selectedCategory, filterVisible, categories } = storeToRefs(myProductStore);
-
-const { fetchProducts, selectCategory } = myProductStore; 
-
-console.log('this is just to check if select category is returning something', categories.value);
-
-const cart = ref([]);
-const cartVisible = ref(false);
-const visible = ref(false); 
-
-
+// Fetch on mount
 onMounted(() => {
   fetchProducts();
 });
 
+// Computed: Filtered Products
 const filteredProducts = computed(() => {
   let prods = fakestore.value;
 
   if (selectedCategory.value !== 'All') {
-    prods = prods.filter(p => p.category.toLowerCase() === selectedCategory.value.toLowerCase());
+    prods = prods.filter(
+      p => p.category.toLowerCase() === selectedCategory.value.toLowerCase()
+    );
   }
 
   if (searchTerm.value) {
-    const lowerCaseSearchTerm = searchTerm.value.toLowerCase();
-    prods = prods.filter(p => p.title.toLowerCase().includes(lowerCaseSearchTerm) || p.description.toLowerCase().includes(lowerCaseSearchTerm));
+    const lower = searchTerm.value.toLowerCase();
+    prods = prods.filter(
+      p =>
+        p.title.toLowerCase().includes(lower) ||
+        p.description.toLowerCase().includes(lower)
+    );
   }
+
   return prods;
 });
 
-const addToCart = (product) => {
-  const existing = cart.value.find(p => p.id === product.id);
-  if (existing) {
-    existing.quantity++;
-  } else {
-    cart.value.push({ ...product, quantity: 1 });
-  }
-  cartVisible.value = true;
-};
 
-const removeProduct = (product) => {
-  cart.value = cart.value.filter(p => p.id !== product.id);
-  if (!cart.value.length) cartVisible.value = false;
-};
-
-const increaseQuantity = (product) => {
-  product.quantity++;
-};
-
-const decreaseQuantity = (product) => {
-  if (product.quantity > 1) product.quantity--;
-  else removeProduct(product);
-};
-
-const cartTotal = computed(() =>
-  cart.value.reduce((sum, i) => sum + i.price * i.quantity, 0).toFixed(2)
-);
-
-const checkout = () => {
-  if (!cart.value.length) return alert('Cart is empty');
-  alert(`Checking out ${cart.value.length} items - total $${cartTotal.value}`);
-  cart.value = [];
-  cartVisible.value = false;
-};
 </script>
 
 <style scoped>
@@ -126,9 +96,6 @@ const checkout = () => {
   transition: transform 0.3s ease;
   overflow: hidden;
 }
-
-/* .page-wrapper.filter-open { transform: translateX(200px); } */
-/* .page-wrapper.cart-open   { transform: translateX(-60px); } */
 
 .content-area {
   flex-grow: 1;

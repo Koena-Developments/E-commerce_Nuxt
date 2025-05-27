@@ -8,8 +8,7 @@
 </template>
 
 <script setup>
-// import { computed } from 'vue'; // Make sure to import computed
-// import { useAuth } from '#auth'; // Assuming this is correct for your Nuxt Auth setup
+import { computed } from 'vue'; 
 
 const { status, signIn, signOut, data } = useAuth();
 
