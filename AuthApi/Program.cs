@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using AuthApi.Data; // Ensure this using directive is present for ApplicationDbContext
+using AuthApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -11,12 +11,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // 1. Database Context Configuration (using In-Memory Database)
-// This line uses the in-memory database for ApplicationDbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseInMemoryDatabase("AuthDbInMemory"));
 
-// If you wanted to switch to SQL Server later, you would comment out the above line
-// and uncomment something like this (after installing Microsoft.EntityFrameworkCore.SqlServer NuGet package):
 /*
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
