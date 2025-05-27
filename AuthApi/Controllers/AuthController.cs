@@ -1,65 +1,80 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using AuthApi.Models;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
-namespace AuthApi.Controllers
+[Route("api/[controller]")]
+[ApiController]
+public class AuthController : ControllerBase
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class AuthController : ControllerBase
+    private readonly UserManager<IdentityUser> _userManager;
+    private readonly IConfiguration _configuration;
+
+    public AuthController(UserManager<IdentityUser> userManager, IConfiguration configuration)
     {
-       
-        private static List<User> _users = new List<User>();
-        private static int _nextUserId = 1;
+        _userManager = userManager;
+        _configuration = configuration;
+    }
 
-        public AuthController()
+    [HttpPost]
+    [Route("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterModel model)
+    {
+        var userExists = await _userManager.FindByNameAsync(model.Username);
+        if (userExists != null)
+            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
+
+        IdentityUser user = new()
         {
-            if (!_users.Any())
-            {
-                _users.Add(new User { Id = _nextUserId++, Username = "testuser", Password = "password123" });
-            }
-        }
+            Email = model.Email,
+            SecurityStamp = Guid.NewGuid().ToString(),
+            UserName = model.Username
+        };
+        var result = await _userManager.CreateAsync(user, model.Password);
+        if (!result.Succeeded)
+            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] User registrationRequest)
+        return Ok(new Response { Status = "Success", Message = "User created successfully!" });
+    }
+
+    [HttpPost]
+    [Route("login")]
+    public async Task<IActionResult> Login([FromBody] LoginModel model)
+    {
+        var user = await _userManager.FindByNameAsync(model.Username);
+        if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
         {
-            if (string.IsNullOrWhiteSpace(registrationRequest.Username) || string.IsNullOrWhiteSpace(registrationRequest.Password))
-            {
-                return BadRequest(new { message = "Username and password are required." });
-            }
+            var userRoles = await _userManager.GetRolesAsync(user);
 
-            if (_users.Any(u => u.Username == registrationRequest.Username))
+            var authClaims = new List<Claim>
             {
-                return Conflict(new { message = "Username already exists." });
-            }
-            var newUser = new User
-            {
-                Id = _nextUserId++,
-                Username = registrationRequest.Username,
-                Password = registrationRequest.Password 
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 
-            _users.Add(newUser);
-
-            return Ok(new { message = "Registration successful!", user = new { newUser.Id, newUser.Username } });
-        }
-
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
-        {
-            if (string.IsNullOrWhiteSpace(loginRequest.Username) || string.IsNullOrWhiteSpace(loginRequest.Password))
+            foreach (var userRole in userRoles)
             {
-                return BadRequest(new { message = "Username and password are required." });
+                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
             }
-            var user = _users.FirstOrDefault(u => u.Username == loginRequest.Username && u.Password == loginRequest.Password);
 
-            if (user == null)
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["JWT:ValidIssuer"],
+                audience: _configuration["JWT:ValidAudience"],
+                expires: DateTime.Now.AddHours(3), 
+                claims: authClaims,
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+            );
+
+            return Ok(new
             {
-                return Unauthorized(new { message = "Invalid username or password." });
-            }
-            return Ok(new { message = "Login successful!", user = new { user.Id, user.Username } });
+                token = new JwtSecurityTokenHandler().WriteToken(token),
+                expiration = token.ValidTo
+            });
         }
+        return Unauthorized();
     }
 }
