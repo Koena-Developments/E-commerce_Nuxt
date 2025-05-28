@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using AuthApi.Data;
+using AuthApi.service;
+using AuthApi.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -55,11 +57,8 @@ builder.Services.AddCors(options =>
         });
 });
 
-
+builder.Services.AddScoped<IAuth, AuthService>();
 var app = builder.Build();
-
-
-
 
 if (app.Environment.IsDevelopment())
 {
@@ -67,7 +66,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseRouting();
 
@@ -78,4 +77,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run("http://localhost:3000");
+app.Run();

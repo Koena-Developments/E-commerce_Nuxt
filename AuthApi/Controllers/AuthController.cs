@@ -38,10 +38,10 @@ public class AuthController : ControllerBase
 
     // POST: api/auth/login
     // Authenticates a user and returns a JWT token
-    [HttpPost]
-    [Route("login")]
-    public async Task<IActionResult> Login([FromBody] LoginModel model)
-    {
+    // [HttpPost]
+    // [Route("login")]
+    // public async Task<IActionResult> Login([FromBody] LoginModel model)
+    // {
         
-    }
+    // }
 }
