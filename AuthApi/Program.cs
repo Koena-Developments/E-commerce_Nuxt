@@ -13,8 +13,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // 1. Database Context Configuration (using In-Memory Database)
+// builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//     options.UseInMemoryDatabase("AuthDbInMemory"));
+
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseInMemoryDatabase("AuthDbInMemory"));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 /*
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

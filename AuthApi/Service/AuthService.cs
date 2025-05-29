@@ -2,6 +2,7 @@ using AuthApi.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
+using AuthApi.Models;
 
 namespace AuthApi.service
 {
@@ -9,6 +10,7 @@ namespace AuthApi.service
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IConfiguration _configuration;
+       
         public AuthService(UserManager<IdentityUser> userManager, IConfiguration configuration)
         {
             _userManager = userManager;
