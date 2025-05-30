@@ -67,11 +67,11 @@ namespace AuthApi.Controllers
                 {
                     status = false,
                     error = "Invalid registration data. Please ensure all required fields are provided and correctly formatted. " + errorMessage,
-                    result = new
-                    {
-                        request_method = fullRequestDetails.Method,
-                        request_body = fullRequestDetails.Body
-                    },
+                    result = {}
+                    // {
+                    //     request_method = fullRequestDetails.Method,
+                    //     request_body = fullRequestDetails.Body
+                    // },
                     // Ip = clientIp,
                     // Body = fullRequestDetails.Body,
                     // RequestMethod = fullRequestDetails.Method
@@ -79,14 +79,16 @@ namespace AuthApi.Controllers
             }
 
             var result = await _authService.Register(model);
-
+            var succeeded = result.Succeeded;
+            var error = result.Errors;
             if (result.Succeeded)
             {
                 return new returnModel
                 {
-                    status = true,
+                    status = succeeded,
                     error = "User registered successfully!",
-                    result = new { succeeded = result.Succeeded },
+                    
+                    // result = new { succeeded = result.Succeeded },
                     // Ip = clientIp,
                     // Body = fullRequestDetails.Body,
                     // RequestMethod = fullRequestDetails.Method
@@ -173,9 +175,5 @@ namespace AuthApi.Controllers
         }
     }
 
-    // public class RequestDetails
-    // {
-    //     public string? Method { get; set; }
-    //     public string? Body { get; set; }
-    // }
+   
 }

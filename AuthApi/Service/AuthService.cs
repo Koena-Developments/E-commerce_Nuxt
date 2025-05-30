@@ -49,13 +49,6 @@ namespace AuthApi.service
             var result = await _userManager.CreateAsync(user, model.Password);
             return result;
         }
-        // get Ip address
-
-        // public object getClientIpAddress()
-        // {
-        //     string ip = Response.HttpContext.Connection.RemoteIpAddress.ToString();
-        //     return new { IpAddress = "0.0.0.0" };
-        // }
 
         /// Authenticates a user and generates a JWT token upon successful login.
         public async Task<(bool Succeeded, string? Token, DateTime? Expires, string? ErrorMessage)> Login(LoginModel model)

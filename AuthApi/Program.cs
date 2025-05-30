@@ -64,7 +64,6 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<IAuth, AuthService>();
 
-// Add services to container.
 builder.Services.AddControllersWithViews();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -78,9 +77,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 // app.UseHttpsRedirection();
-
 app.UseRouting();
 app.UseForwardedHeaders();
 app.UseCors("AllowNuxtApp");
