@@ -7,7 +7,9 @@ namespace AuthApi.Repository
     public interface IAuth
     {
         Task<IdentityResult> Register(RegisterModel model);
-        // Task<IActionResult> Login([FromBody] LoginModel model);
+
+        Task<(bool Succeeded, string? Token, DateTime? Expires, string? ErrorMessage)> Login(LoginModel model);
+    }
     }
 
-}
+

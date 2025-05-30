@@ -1,48 +1,96 @@
-using AuthApi;
-using AuthApi.Repository;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using AuthApi.Models;
+using AuthApi.Repository; 
+using Microsoft.AspNetCore.Mvc; 
+using Microsoft.AspNetCore.Identity; 
+using System.Linq;
+using System.Threading.Tasks; 
 
-[Route("api/[controller]")]
-[ApiController]
+[Route("api/[controller]")] 
+[ApiController] 
 public class AuthController : ControllerBase
 {
+    private readonly IAuth _authService; 
 
-        private readonly IAuth _Auth;
-    // private readonly AuthService _service;
-
-    // Constructor to inject UserManager and Configuration
-    public AuthController(IAuth auth)
+    public AuthController(IAuth authService)
     {
-        _Auth = auth;
-        // _service = service;
+        _authService = authService;
     }
 
-    // POST: api/auth/register
+    // POST: api/Auth/register
     // Registers a new user
     [HttpPost]
-    [Route("register")]
+    [Route("register")] 
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
-        var user = await _Auth.Register(model);
-        if (user == null)
+        if (!ModelState.IsValid)
         {
-            return NotFound();
+            return BadRequest(new Response
+            {
+                Status = "Error",
+                Message = "Invalid registration data. Please ensure all required fields are provided and correctly formatted."
+            });
         }
-        return Ok(new Response { Status = "Success", Message = "User created successfully!" });
+
+        // Call the Authentication Service to Register the User
+        var result = await _authService.Register(model);
+
+        if (result.Succeeded)
+        {
+            return Ok(new Response
+            {
+                Status = "Success",
+                Message = "User registered successfully!"
+            });
+        }
+        else
+        {
+           
+            var errors = string.Join(" ", result.Errors.Select(e => e.Description));
+
+            return BadRequest(new Response
+            {
+                Status = "Error",
+                Message = errors 
+            });
+
+            // return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "An unexpected error occurred during registration: " + errors });
+        }
     }
 
-    // POST: api/auth/login
-    // Authenticates a user and returns a JWT token
-    // [HttpPost]
-    // [Route("login")]
-    // public async Task<IActionResult> Login([FromBody] LoginModel model)
-    // {
-        
-    // }
+   
+    [HttpPost] 
+    [Route("login")]
+    public async Task<IActionResult> Login([FromBody] LoginModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new Response
+            {
+                Status = "Error",
+                Message = "Invalid login data. Please ensure all required fields are provided."
+            });
+        }
+
+        // Call AuthService to handle login and JWT generation
+        var (succeeded, token, expires, errorMessage) = await _authService.Login(model);
+
+        if (succeeded)
+        {
+            return Ok(new
+            {
+                Status = "Success",
+                Message = "Login successful!",
+                Token = token,
+                Expires = expires 
+            });
+        }
+        else
+        {
+            return Unauthorized(new Response
+            {
+                Status = "Error",
+                Message = errorMessage ?? "Login failed. Please check your credentials."
+            });
+        }
+    }
 }
