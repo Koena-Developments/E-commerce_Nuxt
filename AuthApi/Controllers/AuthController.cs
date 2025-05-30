@@ -3,6 +3,11 @@ using AuthApi.Repository;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
+using System.IO;
+using System.Text;
+using System.Text.Json; 
+using static GlobalModels;
 
 namespace AuthApi.Controllers
 {
@@ -12,21 +17,64 @@ namespace AuthApi.Controllers
     {
         private readonly IAuth _authService = authService;
 
-        // POST: api/Auth/register
+        private string? GetClientIpAddress()
+        {
+            return HttpContext?.Connection?.RemoteIpAddress?.ToString();
+        }
+
+        private RequestDetails GetFullRequestDetails<T>(T model)
+        {
+            string requestMethod = HttpContext?.Request?.Method ?? "UNKNOWN";
+            string requestBodyContent = string.Empty;
+
+            if (model != null)
+            {
+                try
+                {
+                    requestBodyContent = JsonSerializer.Serialize(model, new JsonSerializerOptions { WriteIndented = false });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error serializing model to JSON: {ex.Message}");
+                    requestBodyContent = "Error serializing model.";
+                }
+            }
+
+            return new RequestDetails
+            {
+                Method = requestMethod,
+                Body = requestBodyContent
+            };
+        }
+
         [HttpPost]
         [Route("register")]
-        public async Task<Response> Register([FromBody] RegisterModel model)
+        public async Task<returnModel> Register([FromBody] RegisterModel model)
         {
+            string? clientIp = GetClientIpAddress();
+            var fullRequestDetails = GetFullRequestDetails(model); 
+
+            Console.WriteLine($"Register Request from IP: {clientIp}");
+            Console.WriteLine($"Request Body: {fullRequestDetails.Body ?? "N/A"}");
+            Console.WriteLine($"Request Method: {fullRequestDetails.Method ?? "N/A"}");
+
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                 var errorMessage = string.Join(" ", errors);
 
-                return new Response
+                return new returnModel
                 {
-                    Newstatus = 400,
-                    Message = "Invalid registration data. Please ensure all required fields are provided and correctly formatted. " + errorMessage,
-                    Result = null 
+                    status = false,
+                    error = "Invalid registration data. Please ensure all required fields are provided and correctly formatted. " + errorMessage,
+                    result = new
+                    {
+                        request_method = fullRequestDetails.Method,
+                        request_body = fullRequestDetails.Body
+                    },
+                    // Ip = clientIp,
+                    // Body = fullRequestDetails.Body,
+                    // RequestMethod = fullRequestDetails.Method
                 };
             }
 
@@ -34,46 +82,65 @@ namespace AuthApi.Controllers
 
             if (result.Succeeded)
             {
-                return new Response
+                return new returnModel
                 {
-                    Newstatus = 200,
-                    Message = "User registered successfully!",
-                    Result = new { succeeded = result.Succeeded } 
+                    status = true,
+                    error = "User registered successfully!",
+                    result = new { succeeded = result.Succeeded },
+                    // Ip = clientIp,
+                    // Body = fullRequestDetails.Body,
+                    // RequestMethod = fullRequestDetails.Method
                 };
             }
             else
             {
                 var errorDetails = result.Errors.Select(e => new { code = e.Code, description = e.Description }).ToList();
-                var errorMessage = string.Join(" ", result.Errors.Select(e => e.Description)); 
+                var errorMessage = string.Join(" ", result.Errors.Select(e => e.Description));
 
-                return new Response
+                return new returnModel
                 {
-                    Newstatus = 500,
-                    Message = errorMessage,
-                    Result = new
+                    status = false,
+                    error = errorMessage,
+                    // Ip = clientIp,
+                    result = new
                     {
-                        succeeded = result.Succeeded, 
+                        succeeded = result.Succeeded,
                         errors = errorDetails
-                    }
+                    },
+                    // Body = fullRequestDetails.Body,
+                    // RequestMethod = fullRequestDetails.Method
                 };
             }
         }
-        // POST: api/Auth/login
 
         [HttpPost]
         [Route("login")]
-        public async Task<Response> Login([FromBody] LoginModel model)
+        public async Task<returnModel> Login([FromBody] LoginModel model)
         {
+            string? clientIp = GetClientIpAddress();
+            var fullRequestDetails = GetFullRequestDetails(model);
+
+            Console.WriteLine($"Login Request from IP: {clientIp}");
+            Console.WriteLine($"Request Method: {fullRequestDetails.Method ?? "N/A"}");
+            Console.WriteLine($"Request Body: {fullRequestDetails.Body ?? "N/A"}");
+
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                // var errorMessage = string.Join(" ", errors);
+                var errormessage = string.Join(" ", errors);
 
-                return new Response
+                return new returnModel
                 {
-                    Newstatus = 400,
-                    Message = "Invalid login data. Please ensure all required fields are provided. " + errors,
-                    Result = null 
+                    status = false,
+                    error = "Invalid login data. Please ensure all required fields are provided. " + errormessage,
+                    result = new
+                    {
+                        request_method = fullRequestDetails.Method,
+                        request_body = fullRequestDetails.Body
+                    },
+                    // Ip = clientIp,
+                    // Body = fullRequestDetails.Body,
+                    // RequestMethod = fullRequestDetails.Method
                 };
             }
 
@@ -81,22 +148,34 @@ namespace AuthApi.Controllers
 
             if (succeeded)
             {
-                return new Response
+                return new returnModel
                 {
-                    Newstatus = 200,
-                    Message = "Login successful!",
-                    Result = new { Token = token, Expires = expires?.ToString("o") }
+                    status = true,
+                    error = "Login successful!",
+                    result = new { Token = token, Expires = expires?.ToString("o")},
+                    // Ip = clientIp,
+                    // Body = fullRequestDetails.Body,
+                    // RequestMethod = fullRequestDetails.Method
                 };
             }
             else
             {
-                return new Response
+                return new returnModel
                 {
-                    Newstatus = 500,
-                    Message = errorMessage ?? "Login failed. Please check your credentials.",
-                    Result = null 
+                    status = false,
+                    error = errorMessage ?? "Login failed. Please check your credentials.",
+                    result = null,
+                    // Ip = clientIp, 
+                    // Body = fullRequestDetails.Body,
+                    // RequestMethod = fullRequestDetails.Method 
                 };
             }
         }
     }
+
+    // public class RequestDetails
+    // {
+    //     public string? Method { get; set; }
+    //     public string? Body { get; set; }
+    // }
 }

@@ -9,14 +9,15 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using AuthApi.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace AuthApi.service
 {
     public class AuthService : IAuth
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<IdentityUser>? _userManager;
 
-        private readonly IConfiguration _configuration;
+        private readonly IConfiguration? _configuration;
 
         public AuthService(UserManager<IdentityUser> userManager, IConfiguration configuration)
         {
@@ -48,6 +49,13 @@ namespace AuthApi.service
             var result = await _userManager.CreateAsync(user, model.Password);
             return result;
         }
+        // get Ip address
+
+        // public object getClientIpAddress()
+        // {
+        //     string ip = Response.HttpContext.Connection.RemoteIpAddress.ToString();
+        //     return new { IpAddress = "0.0.0.0" };
+        // }
 
         /// Authenticates a user and generates a JWT token upon successful login.
         public async Task<(bool Succeeded, string? Token, DateTime? Expires, string? ErrorMessage)> Login(LoginModel model)

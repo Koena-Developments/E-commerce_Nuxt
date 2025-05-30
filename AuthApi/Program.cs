@@ -35,6 +35,7 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 })
+
 .AddJwtBearer(options =>
 {
     options.SaveToken = true;
@@ -62,6 +63,14 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<IAuth, AuthService>();
+
+// Add services to container.
+builder.Services.AddControllersWithViews();
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -73,7 +82,7 @@ if (app.Environment.IsDevelopment())
 // app.UseHttpsRedirection();
 
 app.UseRouting();
-
+app.UseForwardedHeaders();
 app.UseCors("AllowNuxtApp");
 
 app.UseAuthentication();

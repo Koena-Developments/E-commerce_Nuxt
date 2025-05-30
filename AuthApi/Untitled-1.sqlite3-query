@@ -1,0 +1,4 @@
+-- database: ./AuthDb.db
+
+Alter TABLE User_table RENAME TO user_traffic_data;
+
