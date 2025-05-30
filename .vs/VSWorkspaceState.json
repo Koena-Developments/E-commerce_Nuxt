@@ -1,0 +1,12 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\AuthApi",
+    "\\AuthApi\\Controllers",
+    "\\AuthApi\\obj",
+    "\\AuthApi\\obj\\Debug",
+    "\\AuthApi\\Repository",
+    "\\AuthApi\\Service"
+  ],
+  "PreviewInSolutionExplorer": false
+}

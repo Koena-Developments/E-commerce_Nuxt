@@ -1,96 +1,102 @@
 using AuthApi.Models;
-using AuthApi.Repository; 
-using Microsoft.AspNetCore.Mvc; 
-using Microsoft.AspNetCore.Identity; 
+using AuthApi.Repository;
+using Microsoft.AspNetCore.Mvc;
 using System.Linq;
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
 
-[Route("api/[controller]")] 
-[ApiController] 
-public class AuthController : ControllerBase
+namespace AuthApi.Controllers
 {
-    private readonly IAuth _authService; 
-
-    public AuthController(IAuth authService)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AuthController(IAuth authService) : ControllerBase
     {
-        _authService = authService;
-    }
+        private readonly IAuth _authService = authService;
 
-    // POST: api/Auth/register
-    // Registers a new user
-    [HttpPost]
-    [Route("register")] 
-    public async Task<IActionResult> Register([FromBody] RegisterModel model)
-    {
-        if (!ModelState.IsValid)
+        // POST: api/Auth/register
+        [HttpPost]
+        [Route("register")]
+        public async Task<Response> Register([FromBody] RegisterModel model)
         {
-            return BadRequest(new Response
+            if (!ModelState.IsValid)
             {
-                Status = "Error",
-                Message = "Invalid registration data. Please ensure all required fields are provided and correctly formatted."
-            });
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                var errorMessage = string.Join(" ", errors);
+
+                return new Response
+                {
+                    Newstatus = 400,
+                    Message = "Invalid registration data. Please ensure all required fields are provided and correctly formatted. " + errorMessage,
+                    Result = null 
+                };
+            }
+
+            var result = await _authService.Register(model);
+
+            if (result.Succeeded)
+            {
+                return new Response
+                {
+                    Newstatus = 200,
+                    Message = "User registered successfully!",
+                    Result = new { succeeded = result.Succeeded } 
+                };
+            }
+            else
+            {
+                var errorDetails = result.Errors.Select(e => new { code = e.Code, description = e.Description }).ToList();
+                var errorMessage = string.Join(" ", result.Errors.Select(e => e.Description)); 
+
+                return new Response
+                {
+                    Newstatus = 500,
+                    Message = errorMessage,
+                    Result = new
+                    {
+                        succeeded = result.Succeeded, 
+                        errors = errorDetails
+                    }
+                };
+            }
         }
+        // POST: api/Auth/login
 
-        // Call the Authentication Service to Register the User
-        var result = await _authService.Register(model);
-
-        if (result.Succeeded)
+        [HttpPost]
+        [Route("login")]
+        public async Task<Response> Login([FromBody] LoginModel model)
         {
-            return Ok(new Response
+            if (!ModelState.IsValid)
             {
-                Status = "Success",
-                Message = "User registered successfully!"
-            });
-        }
-        else
-        {
-           
-            var errors = string.Join(" ", result.Errors.Select(e => e.Description));
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                // var errorMessage = string.Join(" ", errors);
 
-            return BadRequest(new Response
+                return new Response
+                {
+                    Newstatus = 400,
+                    Message = "Invalid login data. Please ensure all required fields are provided. " + errors,
+                    Result = null 
+                };
+            }
+
+            var (succeeded, token, expires, errorMessage) = await _authService.Login(model);
+
+            if (succeeded)
             {
-                Status = "Error",
-                Message = errors 
-            });
-
-            // return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "An unexpected error occurred during registration: " + errors });
-        }
-    }
-
-   
-    [HttpPost] 
-    [Route("login")]
-    public async Task<IActionResult> Login([FromBody] LoginModel model)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(new Response
+                return new Response
+                {
+                    Newstatus = 200,
+                    Message = "Login successful!",
+                    Result = new { Token = token, Expires = expires?.ToString("o") }
+                };
+            }
+            else
             {
-                Status = "Error",
-                Message = "Invalid login data. Please ensure all required fields are provided."
-            });
-        }
-
-        // Call AuthService to handle login and JWT generation
-        var (succeeded, token, expires, errorMessage) = await _authService.Login(model);
-
-        if (succeeded)
-        {
-            return Ok(new
-            {
-                Status = "Success",
-                Message = "Login successful!",
-                Token = token,
-                Expires = expires 
-            });
-        }
-        else
-        {
-            return Unauthorized(new Response
-            {
-                Status = "Error",
-                Message = errorMessage ?? "Login failed. Please check your credentials."
-            });
+                return new Response
+                {
+                    Newstatus = 500,
+                    Message = errorMessage ?? "Login failed. Please check your credentials.",
+                    Result = null 
+                };
+            }
         }
     }
 }

@@ -12,7 +12,6 @@ namespace AuthApi.Data
             : base(options)
         {
         }
-
         // Override OnModelCreating to customize the model building process
         protected override void OnModelCreating(ModelBuilder builder)
         {
