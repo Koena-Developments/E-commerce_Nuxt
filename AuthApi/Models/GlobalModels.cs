@@ -7,7 +7,6 @@ public class GlobalModels
         public bool status { get; set; }
 
         public string error { get; set; }
-
   }
    
 }

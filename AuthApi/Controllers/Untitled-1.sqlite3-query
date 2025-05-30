@@ -1,0 +1,3 @@
+-- database: ../AuthDb.db
+
+SELECT * FROM AspNetUsers;
