@@ -8,28 +8,41 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
-using AuthApi.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
+using AuthApi.Models; 
 
 namespace AuthApi.service
 {
     public class AuthService : IAuth
     {
-        private readonly UserManager<IdentityUser>? _userManager;
-
-        private readonly IConfiguration? _configuration;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IConfiguration _configuration;
 
         public AuthService(UserManager<IdentityUser> userManager, IConfiguration configuration)
         {
-            _userManager = userManager;
-
-            _configuration = configuration;
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
-        /// Registers a new user 
+        /// Registers a new user
         public async Task<IdentityResult> Register(RegisterModel model)
         {
-            var userExists = await _userManager.FindByNameAsync(model.Username);
+            // For FindByNameAsync, the string argument cannot be null.
+            if (string.IsNullOrWhiteSpace(model.Username))
+            {
+                return IdentityResult.Failed(new IdentityError { Description = "Username cannot be empty." });
+            }
+            if (string.IsNullOrWhiteSpace(model.Password))
+            {
+                return IdentityResult.Failed(new IdentityError { Description = "Password cannot be empty." });
+            }
+            if (string.IsNullOrWhiteSpace(model.Email))
+            {
+                return IdentityResult.Failed(new IdentityError { Description = "Email cannot be empty." });
+            }
+
+
+            // Use model.Username! to tell compiler you're sure it's not null due to checks above.
+            var userExists = await _userManager.FindByNameAsync(model.Username!);
             if (userExists != null)
             {
                 var error = IdentityResult.Failed(new IdentityError
@@ -41,50 +54,68 @@ namespace AuthApi.service
 
             IdentityUser user = new()
             {
-                Email = model.Email,
+                Email = model.Email!,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.Username
+                UserName = model.Username! 
             };
 
-            var result = await _userManager.CreateAsync(user, model.Password);
+            var result = await _userManager.CreateAsync(user, model.Password!);
             return result;
         }
 
         /// Authenticates a user and generates a JWT token upon successful login.
         public async Task<(bool Succeeded, string? Token, DateTime? Expires, string? ErrorMessage)> Login(LoginModel model)
         {
-            var user = await _userManager.FindByNameAsync(model.Username);
-            if (user == null)
+            if (string.IsNullOrWhiteSpace(model.Username)) 
             {
-                user = await _userManager.FindByEmailAsync(model.Username);
+                return (false, null, null, "Username cannot be empty.");
+            }
+            if (string.IsNullOrWhiteSpace(model.Password))
+            {
+                return (false, null, null, "Password cannot be empty.");
             }
 
-            if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
+            var user = await _userManager.FindByNameAsync(model.Username!);
+            if (user == null)
+            {
+                user = await _userManager.FindByEmailAsync(model.Username!); 
+            }
+
+
+            // Ensure user is not null and password check is successful
+            if (user != null && await _userManager.CheckPasswordAsync(user, model.Password!)) 
             {
                 var userRoles = await _userManager.GetRolesAsync(user);
 
                 var authClaims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, user.UserName),
+                    // user.UserName and user.Id are generally non-null for an IdentityUser fetched from UserManager
+                    // but adding ?? string.Empty is safest for claims if you're not absolutely sure.
+                    new Claim(ClaimTypes.Name, user.UserName ?? user.Email ?? string.Empty),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(ClaimTypes.NameIdentifier, user.Id)
+                    new Claim(ClaimTypes.NameIdentifier, user.Id ?? throw new InvalidOperationException("User ID is null for a valid user object."))
                 };
 
                 foreach (var userRole in userRoles)
                 {
-                    authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                    authClaims.Add(new Claim(ClaimTypes.Role, userRole ?? string.Empty)); // userRole should not be null, but defensive.
                 }
 
-                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+                var jwtSecret = _configuration["JWT:Secret"] ?? throw new InvalidOperationException("JWT:Secret configuration is missing!");
+                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
 
-                var tokenValidityHours = double.Parse(_configuration["JWT:TokenValidityInHours"] ?? "3");
+                if (!double.TryParse(_configuration["JWT:TokenValidityInHours"], out double tokenValidityHours))
+                {
+                    tokenValidityHours = 3;
+                }
                 var tokenExpiryTime = DateTime.UtcNow.AddHours(tokenValidityHours);
 
-                //  Create the JWT
+                var issuer = _configuration["JWT:ValidIssuer"] ?? throw new InvalidOperationException("JWT:ValidIssuer configuration is missing!");
+                var audience = _configuration["JWT:ValidAudience"] ?? throw new InvalidOperationException("JWT:ValidAudience configuration is missing!");
 
                 var token = new JwtSecurityToken(
-                    issuer: _configuration["JWT:ValidIssuer"],
-                    audience: _configuration["JWT:ValidAudience"],
+                    issuer: issuer,
+                    audience: audience,
                     expires: tokenExpiryTime,
                     claims: authClaims,
                     signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
