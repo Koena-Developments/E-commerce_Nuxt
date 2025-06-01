@@ -17,6 +17,41 @@ namespace AuthApi.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
 
+            modelBuilder.Entity("AuthApi.Models.GlobalModels+UserTrafficEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ClientIpAddress")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExceptionDetails")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExceptionMessage")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExceptionType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RequestBody")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("RequestTimeStamp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RequestUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("ResponseStatusCode")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("user_traffic_data", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")

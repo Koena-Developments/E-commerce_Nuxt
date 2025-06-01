@@ -1,18 +1,22 @@
-using AuthApi.Models;
+using AuthApi.Models; // Brings in GlobalModels, RegisterModel, LoginModel
 using AuthApi.Repository;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
 using System;
 using System.Text.Json;
+using AuthApi.Data; // <--- Add this using directive for ApplicationDbContext
+using Microsoft.EntityFrameworkCore; // <--- Add this for DbUpdateException
 
 namespace AuthApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController(IAuth authService) : ControllerBase
+    // Inject ApplicationDbContext into the constructor
+    public class AuthController(IAuth authService, ApplicationDbContext dbContext) : ControllerBase
     {
         private readonly IAuth _authService = authService;
+        private readonly ApplicationDbContext _dbContext = dbContext; // <--- Store DbContext instance
 
         private string? GetClientIpAddress()
         {
@@ -45,19 +49,7 @@ namespace AuthApi.Controllers
             };
         }
 
-        private void LogUserTrafficEntry(AuthApi.Models.GlobalModels.UserTrafficEntry entry)
-        {
-            Console.WriteLine("\n--- User Traffic Entry ---");
-            Console.WriteLine($"Client IP: {entry.ClientIpAddress}");
-            Console.WriteLine($"Request Time: {entry.RequestTimeStamp}");
-            Console.WriteLine($"Response Status Code: {entry.ResponseStatusCode?.ToString() ?? "N/A"}");
-            Console.WriteLine($"Request URL: {entry.RequestUrl ?? "N/A"}");
-            Console.WriteLine($"Request Body: {entry.RequestBody ?? "N/A"}");
-            Console.WriteLine($"Exception Type: {entry.ExceptionType ?? "N/A"}");
-            Console.WriteLine($"Exception Message: {entry.ExceptionMessage ?? "N/A"}");
-            Console.WriteLine($"Exception Details: {entry.ExceptionDetails ?? "N/A"}");
-            Console.WriteLine("--------------------------\n");
-        }
+        // Removed LogUserTrafficEntry method, as we're saving to DB now
 
         [HttpPost]
         [Route("register")]
@@ -113,7 +105,7 @@ namespace AuthApi.Controllers
                             status = true,
                             error = string.Empty
                         };
-                        trafficEntry.ResponseStatusCode = 200; 
+                        trafficEntry.ResponseStatusCode = 200;
                     }
                     else
                     {
@@ -132,11 +124,11 @@ namespace AuthApi.Controllers
 
                         if (errorMessages.Contains("User already exists", StringComparison.OrdinalIgnoreCase))
                         {
-                            trafficEntry.ResponseStatusCode = 409; 
+                            trafficEntry.ResponseStatusCode = 409;
                         }
                         else
                         {
-                            trafficEntry.ResponseStatusCode = 500; 
+                            trafficEntry.ResponseStatusCode = 500;
                         }
                     }
                 }
@@ -153,11 +145,26 @@ namespace AuthApi.Controllers
                     status = false,
                     error = "An internal server error occurred."
                 };
-                trafficEntry.ResponseStatusCode = 500; 
+                trafficEntry.ResponseStatusCode = 500;
             }
             finally
             {
-                LogUserTrafficEntry(trafficEntry);
+                // --- Store the traffic entry to the database ---
+                try
+                {
+                    _dbContext.UserTraffic.Add(trafficEntry);
+                    await _dbContext.SaveChangesAsync();
+                    Console.WriteLine("User traffic entry saved to database successfully.");
+                }
+                catch (DbUpdateException dbEx)
+                {
+                    Console.WriteLine($"ERROR: Failed to save user traffic entry to database: {dbEx.Message}");
+                    Console.WriteLine($"Details: {dbEx.InnerException?.Message}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"ERROR: An unexpected error occurred while saving user traffic entry: {ex.Message}");
+                }
             }
 
             return response;
@@ -200,7 +207,7 @@ namespace AuthApi.Controllers
                         status = false,
                         error = modelStateErrorMessage
                     };
-                    trafficEntry.ResponseStatusCode = 400; 
+                    trafficEntry.ResponseStatusCode = 400;
                     trafficEntry.ExceptionType = "ValidationError";
                     trafficEntry.ExceptionMessage = "Model state validation failed.";
                     trafficEntry.ExceptionDetails = modelStateErrorMessage;
@@ -245,7 +252,7 @@ namespace AuthApi.Controllers
             {
                 trafficEntry.ExceptionType = ex.GetType().Name;
                 trafficEntry.ExceptionMessage = ex.Message;
-                trafficEntry.ExceptionDetails = ex.ToString(); 
+                trafficEntry.ExceptionDetails = ex.ToString();
 
                 response = new AuthApi.Models.GlobalModels.returnModel
                 {
@@ -253,11 +260,27 @@ namespace AuthApi.Controllers
                     status = false,
                     error = "An internal server error occurred."
                 };
-                trafficEntry.ResponseStatusCode = 500; 
+                trafficEntry.ResponseStatusCode = 500;
             }
             finally
             {
-                LogUserTrafficEntry(trafficEntry);
+                // --- Store the traffic entry to the database ---
+                try
+                {
+                    _dbContext.UserTraffic.Add(trafficEntry);
+                    await _dbContext.SaveChangesAsync();
+                    Console.WriteLine("User traffic entry saved to database successfully.");
+                }
+                catch (DbUpdateException dbEx)
+                {
+                    Console.WriteLine($"ERROR: Failed to save user traffic entry to database: {dbEx.Message}");
+                    Console.WriteLine($"Details: {dbEx.InnerException?.Message}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"ERROR: An unexpected error occurred while saving user traffic entry: {ex.Message}");
+                }
+                // -----------------------------------------------
             }
 
             return response;

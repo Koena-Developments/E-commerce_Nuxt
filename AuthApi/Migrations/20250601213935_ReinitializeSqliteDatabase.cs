@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AuthApi.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialAuthDbSetup : Migration
+    public partial class ReinitializeSqliteDatabase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -48,6 +48,26 @@ namespace AuthApi.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "user_traffic_data",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    ClientIpAddress = table.Column<string>(type: "TEXT", nullable: true),
+                    RequestTimeStamp = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    ResponseStatusCode = table.Column<int>(type: "INTEGER", nullable: true),
+                    RequestBody = table.Column<string>(type: "TEXT", nullable: true),
+                    RequestUrl = table.Column<string>(type: "TEXT", nullable: true),
+                    ExceptionType = table.Column<string>(type: "TEXT", nullable: true),
+                    ExceptionMessage = table.Column<string>(type: "TEXT", nullable: true),
+                    ExceptionDetails = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_user_traffic_data", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -211,6 +231,9 @@ namespace AuthApi.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "user_traffic_data");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

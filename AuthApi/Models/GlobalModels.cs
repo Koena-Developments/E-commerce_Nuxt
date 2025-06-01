@@ -15,6 +15,7 @@ namespace AuthApi.Models
         
         public class UserTrafficEntry
         {
+              public int Id { get; set; }
             public string? ClientIpAddress { get; set; }
             public DateTime RequestTimeStamp { get; set; }
             public int? ResponseStatusCode { get; set; } 

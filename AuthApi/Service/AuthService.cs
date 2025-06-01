@@ -41,7 +41,6 @@ namespace AuthApi.service
             }
 
 
-            // Use model.Username! to tell compiler you're sure it's not null due to checks above.
             var userExists = await _userManager.FindByNameAsync(model.Username!);
             if (userExists != null)
             {
@@ -89,8 +88,6 @@ namespace AuthApi.service
 
                 var authClaims = new List<Claim>
                 {
-                    // user.UserName and user.Id are generally non-null for an IdentityUser fetched from UserManager
-                    // but adding ?? string.Empty is safest for claims if you're not absolutely sure.
                     new Claim(ClaimTypes.Name, user.UserName ?? user.Email ?? string.Empty),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(ClaimTypes.NameIdentifier, user.Id ?? throw new InvalidOperationException("User ID is null for a valid user object."))
@@ -98,7 +95,7 @@ namespace AuthApi.service
 
                 foreach (var userRole in userRoles)
                 {
-                    authClaims.Add(new Claim(ClaimTypes.Role, userRole ?? string.Empty)); // userRole should not be null, but defensive.
+                    authClaims.Add(new Claim(ClaimTypes.Role, userRole ?? string.Empty));
                 }
 
                 var jwtSecret = _configuration["JWT:Secret"] ?? throw new InvalidOperationException("JWT:Secret configuration is missing!");
