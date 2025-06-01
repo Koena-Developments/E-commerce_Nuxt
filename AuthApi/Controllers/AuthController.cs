@@ -1,13 +1,12 @@
+// File: C:\Users\thaba\Desktop\nuxt_learn\AuthApi\Controllers\AuthController.cs
+
 using AuthApi.Models;
 using AuthApi.Repository;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
 using System;
-using System.IO;
-using System.Text;
-using System.Text.Json; 
-using static GlobalModels;
+using System.Text.Json;
 
 namespace AuthApi.Controllers
 {
@@ -22,7 +21,7 @@ namespace AuthApi.Controllers
             return HttpContext?.Connection?.RemoteIpAddress?.ToString();
         }
 
-        private RequestDetails GetFullRequestDetails<T>(T model)
+        private AuthApi.Models.GlobalModels.RequestDetails GetFullRequestDetails<T>(T model)
         {
             string requestMethod = HttpContext?.Request?.Method ?? "UNKNOWN";
             string requestBodyContent = string.Empty;
@@ -40,7 +39,7 @@ namespace AuthApi.Controllers
                 }
             }
 
-            return new RequestDetails
+            return new AuthApi.Models.GlobalModels.RequestDetails
             {
                 Method = requestMethod,
                 Body = requestBodyContent
@@ -49,10 +48,10 @@ namespace AuthApi.Controllers
 
         [HttpPost]
         [Route("register")]
-        public async Task<returnModel> Register([FromBody] RegisterModel model)
+        public async Task<AuthApi.Models.GlobalModels.returnModel> Register([FromBody] RegisterModel model)
         {
             string? clientIp = GetClientIpAddress();
-            var fullRequestDetails = GetFullRequestDetails(model); 
+            var fullRequestDetails = GetFullRequestDetails(model);
 
             Console.WriteLine($"Register Request from IP: {clientIp}");
             Console.WriteLine($"Request Body: {fullRequestDetails.Body ?? "N/A"}");
@@ -63,61 +62,46 @@ namespace AuthApi.Controllers
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                 var errorMessage = string.Join(" ", errors);
 
-                return new returnModel
+                return new AuthApi.Models.GlobalModels.returnModel
                 {
+                    result = new
+                    {
+                        message = "Invalid registration data. Please ensure all required fields are provided and correctly formatted."
+                    },
                     status = false,
-                    error = "Invalid registration data. Please ensure all required fields are provided and correctly formatted. " + errorMessage,
-                    result = {}
-                    // {
-                    //     request_method = fullRequestDetails.Method,
-                    //     request_body = fullRequestDetails.Body
-                    // },
-                    // Ip = clientIp,
-                    // Body = fullRequestDetails.Body,
-                    // RequestMethod = fullRequestDetails.Method
+                    error = errorMessage
                 };
             }
 
             var result = await _authService.Register(model);
-            var succeeded = result.Succeeded;
-            var error = result.Errors;
+
             if (result.Succeeded)
             {
-                return new returnModel
+                return new AuthApi.Models.GlobalModels.returnModel
                 {
-                    status = succeeded,
-                    error = "User registered successfully!",
-                    
-                    // result = new { succeeded = result.Succeeded },
-                    // Ip = clientIp,
-                    // Body = fullRequestDetails.Body,
-                    // RequestMethod = fullRequestDetails.Method
+                    result = new { message = "User registered successfully!" },
+                    status = true,
+                    error = string.Empty
                 };
             }
             else
             {
-                var errorDetails = result.Errors.Select(e => new { code = e.Code, description = e.Description }).ToList();
-                var errorMessage = string.Join(" ", result.Errors.Select(e => e.Description));
+                var errorMessages = string.Join(" ", result.Errors.Select(e => e.Description));
 
-                return new returnModel
+                return new AuthApi.Models.GlobalModels.returnModel
                 {
+                    result = new { message = "Registration failed." },
                     status = false,
-                    error = errorMessage,
-                    // Ip = clientIp,
-                    result = new
-                    {
-                        succeeded = result.Succeeded,
-                        errors = errorDetails
-                    },
-                    // Body = fullRequestDetails.Body,
-                    // RequestMethod = fullRequestDetails.Method
+                    error = errorMessages
                 };
             }
         }
 
+ 
+
         [HttpPost]
         [Route("login")]
-        public async Task<returnModel> Login([FromBody] LoginModel model)
+        public async Task<AuthApi.Models.GlobalModels.returnModel> Login([FromBody] LoginModel model)
         {
             string? clientIp = GetClientIpAddress();
             var fullRequestDetails = GetFullRequestDetails(model);
@@ -129,20 +113,16 @@ namespace AuthApi.Controllers
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                var errormessage = string.Join(" ", errors);
+                var modelStateErrorMessage = string.Join(" ", errors);
 
-                return new returnModel
+                return new AuthApi.Models.GlobalModels.returnModel
                 {
-                    status = false,
-                    error = "Invalid login data. Please ensure all required fields are provided. " + errormessage,
                     result = new
                     {
-                        request_method = fullRequestDetails.Method,
-                        request_body = fullRequestDetails.Body
+                        message = "Invalid login data. Please ensure all required fields are provided."
                     },
-                    // Ip = clientIp,
-                    // Body = fullRequestDetails.Body,
-                    // RequestMethod = fullRequestDetails.Method
+                    status = false,
+                    error = modelStateErrorMessage
                 };
             }
 
@@ -150,30 +130,27 @@ namespace AuthApi.Controllers
 
             if (succeeded)
             {
-                return new returnModel
+                return new AuthApi.Models.GlobalModels.returnModel
                 {
+                    result = new
+                    {
+                        message = "Login successful!",
+                        token = token,
+                        expires = expires?.ToString("o")
+                    },
                     status = true,
-                    error = "Login successful!",
-                    result = new { Token = token, Expires = expires?.ToString("o")},
-                    // Ip = clientIp,
-                    // Body = fullRequestDetails.Body,
-                    // RequestMethod = fullRequestDetails.Method
+                    error = string.Empty
                 };
             }
             else
             {
-                return new returnModel
+                return new AuthApi.Models.GlobalModels.returnModel
                 {
+                    result = new { message = "Login failed." },
                     status = false,
-                    error = errorMessage ?? "Login failed. Please check your credentials.",
-                    result = null,
-                    // Ip = clientIp, 
-                    // Body = fullRequestDetails.Body,
-                    // RequestMethod = fullRequestDetails.Method 
+                    error = errorMessage ?? "Unknown login error."
                 };
             }
-        }
+        } 
     }
-
-   
-}
+} 

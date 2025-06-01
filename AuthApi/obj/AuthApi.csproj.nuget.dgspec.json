@@ -1,25 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\thabang\\Desktop\\Nuxt_Learn\\nuxt_work\\AuthApi\\AuthApi.csproj": {}
+    "C:\\Users\\thaba\\Desktop\\nuxt_learn\\AuthApi\\AuthApi.csproj": {}
   },
   "projects": {
-    "C:\\Users\\thabang\\Desktop\\Nuxt_Learn\\nuxt_work\\AuthApi\\AuthApi.csproj": {
+    "C:\\Users\\thaba\\Desktop\\nuxt_learn\\AuthApi\\AuthApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\thabang\\Desktop\\Nuxt_Learn\\nuxt_work\\AuthApi\\AuthApi.csproj",
+        "projectUniqueName": "C:\\Users\\thaba\\Desktop\\nuxt_learn\\AuthApi\\AuthApi.csproj",
         "projectName": "AuthApi",
-        "projectPath": "C:\\Users\\thabang\\Desktop\\Nuxt_Learn\\nuxt_work\\AuthApi\\AuthApi.csproj",
-        "packagesPath": "C:\\Users\\thabang\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\thabang\\Desktop\\Nuxt_Learn\\nuxt_work\\AuthApi\\obj\\",
+        "projectPath": "C:\\Users\\thaba\\Desktop\\nuxt_learn\\AuthApi\\AuthApi.csproj",
+        "packagesPath": "C:\\Users\\thaba\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\thaba\\Desktop\\nuxt_learn\\AuthApi\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\thabang\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Users\\thaba\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -44,7 +44,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "9.0.200"
       },
       "frameworks": {
         "net9.0": {
@@ -118,7 +118,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
