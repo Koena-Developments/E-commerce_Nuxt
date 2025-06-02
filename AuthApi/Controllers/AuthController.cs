@@ -1,21 +1,22 @@
-using AuthApi.Models; 
+using AuthApi.Models;
 using AuthApi.Repository;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
 using System;
 using System.Text.Json;
-using AuthApi.Data; 
-using Microsoft.EntityFrameworkCore; 
+using AuthApi.Data;
+using AuthApi.TFTEntities;
+using Microsoft.EntityFrameworkCore;
 
 namespace AuthApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController(IAuth authService, ApplicationDbContext dbContext) : ControllerBase
+    public class AuthController(IAuth authService, AuthDbContext authDbContext) : ControllerBase
     {
         private readonly IAuth _authService = authService;
-        private readonly ApplicationDbContext _dbContext = dbContext; 
+        private readonly AuthDbContext _authDbContext = authDbContext;
 
         private string? GetClientIpAddress()
         {
@@ -48,17 +49,20 @@ namespace AuthApi.Controllers
             };
         }
 
-
         [HttpPost]
         [Route("register")]
         public async Task<AuthApi.Models.GlobalModels.returnModel> Register([FromBody] RegisterModel model)
         {
-            var trafficEntry = new AuthApi.Models.GlobalModels.UserTrafficEntry
+            var trafficEntry = new AuthApi.TFTEntities.UserTrafficDatum
             {
                 ClientIpAddress = GetClientIpAddress(),
                 RequestTimeStamp = DateTime.UtcNow,
                 RequestBody = GetFullRequestDetails(model).Body,
                 RequestUrl = HttpContext?.Request?.Path.ToString(),
+                ExceptionType = null,
+                ExceptionMessage = null,
+                ExceptionDetails = null,
+                ResponseStatusCode = 0
             };
 
             AuthApi.Models.GlobalModels.returnModel response;
@@ -95,7 +99,7 @@ namespace AuthApi.Controllers
                 {
                     var result = await _authService.Register(model);
 
-                    if (result.Succeeded)
+                    if (result.Success)
                     {
                         response = new AuthApi.Models.GlobalModels.returnModel
                         {
@@ -107,7 +111,7 @@ namespace AuthApi.Controllers
                     }
                     else
                     {
-                        var errorMessages = string.Join(" ", result.Errors.Select(e => e.Description));
+                        var errorMessages = result.ErrorMessage ?? "Registration failed.";
 
                         response = new AuthApi.Models.GlobalModels.returnModel
                         {
@@ -149,8 +153,8 @@ namespace AuthApi.Controllers
             {
                 try
                 {
-                    _dbContext.UserTraffic.Add(trafficEntry);
-                    await _dbContext.SaveChangesAsync();
+                    _authDbContext.UserTrafficData.Add(trafficEntry);
+                    await _authDbContext.SaveChangesAsync();
                     Console.WriteLine("User traffic entry saved to database successfully.");
                 }
                 catch (DbUpdateException dbEx)
@@ -171,12 +175,16 @@ namespace AuthApi.Controllers
         [Route("login")]
         public async Task<AuthApi.Models.GlobalModels.returnModel> Login([FromBody] LoginModel model)
         {
-            var trafficEntry = new AuthApi.Models.GlobalModels.UserTrafficEntry
+            var trafficEntry = new AuthApi.TFTEntities.UserTrafficDatum
             {
                 ClientIpAddress = GetClientIpAddress(),
                 RequestTimeStamp = DateTime.UtcNow,
                 RequestBody = GetFullRequestDetails(model).Body,
                 RequestUrl = HttpContext?.Request?.Path.ToString(),
+                ExceptionType = null,
+                ExceptionMessage = null,
+                ExceptionDetails = null,
+                ResponseStatusCode = 0
             };
 
             AuthApi.Models.GlobalModels.returnModel response;
@@ -263,8 +271,8 @@ namespace AuthApi.Controllers
             {
                 try
                 {
-                    _dbContext.UserTraffic.Add(trafficEntry);
-                    await _dbContext.SaveChangesAsync();
+                    _authDbContext.UserTrafficData.Add(trafficEntry);
+                    await _authDbContext.SaveChangesAsync();
                     Console.WriteLine("User traffic entry saved to database successfully.");
                 }
                 catch (DbUpdateException dbEx)
@@ -282,6 +290,3 @@ namespace AuthApi.Controllers
         }
     }
 }
-
-
-// Scaffold-DbContext "Server=DESKTOP-5DB4IH0\SQLPAPI\\SQLEXPRESS;Database=AuthDb;TrustServerCertificate=true;Trusted_Connection=True;MultipleActiveResultSets=true" Microsoft.EntityFrameworkCore.SqlServer -OutputDir TFTEntities -force

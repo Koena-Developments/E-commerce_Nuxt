@@ -1,128 +1,113 @@
+using AuthApi.Models;
 using AuthApi.Repository;
+using AuthApi.TFTEntities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.IdentityModel.Tokens;
-using AuthApi.Models; 
 
 namespace AuthApi.service
 {
     public class AuthService : IAuth
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly AuthDbContext _context;
         private readonly IConfiguration _configuration;
 
-        public AuthService(UserManager<IdentityUser> userManager, IConfiguration configuration)
+        public AuthService(AuthDbContext context, IConfiguration configuration)
         {
-            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
-        /// Registers a new user
-        public async Task<IdentityResult> Register(RegisterModel model)
+        public async Task<(bool Success, string? ErrorMessage)> Register(RegisterModel model)
         {
             if (string.IsNullOrWhiteSpace(model.Username))
-            {
-                return IdentityResult.Failed(new IdentityError { Description = "Username cannot be empty." });
-            }
-            if (string.IsNullOrWhiteSpace(model.Password))
-            {
-                return IdentityResult.Failed(new IdentityError { Description = "Password cannot be empty." });
-            }
+                return (false, "Username is required");
             if (string.IsNullOrWhiteSpace(model.Email))
-            {
-                return IdentityResult.Failed(new IdentityError { Description = "Email cannot be empty." });
-            }
+                return (false, "Email is required");
+            if (string.IsNullOrWhiteSpace(model.Password))
+                return (false, "Password is required");
 
+            var usernameExists = await _context.Users.AnyAsync(u => u.Username == model.Username);
+            if (usernameExists)
+                return (false, "Username already exists");
 
-            var userExists = await _userManager.FindByNameAsync(model.Username!);
-            if (userExists != null)
-            {
-                var error = IdentityResult.Failed(new IdentityError
-                {
-                    Description = "User already exists"
-                });
-                return error;
-            }
+            var emailExists = await _context.Users.AnyAsync(u => u.Email == model.Email);
+            if (emailExists)
+                return (false, "Email already exists");
 
-            IdentityUser user = new()
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password);
+
+            var user = new User
             {
-                Email = model.Email!,
-                SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.Username! 
+                Username = model.Username,
+                Email = model.Email,
+                Password = hashedPassword,
+                CreatedAt = DateTime.Now,
+                CreatedBy = model.Username,
+                UpdatedAt = DateTime.Now,
+                UpdatedBy = model.Username
             };
 
-            var result = await _userManager.CreateAsync(user, model.Password!);
-            return result;
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            return (true, null);
         }
 
-        /// Authenticates a user and generates a JWT token upon successful login.
-        public async Task<(bool Succeeded, string? Token, DateTime? Expires, string? ErrorMessage)> Login(LoginModel model)
+        public async   Task<(bool Succeeded, string? Token, DateTime? Expires, string? ErrorMessage)> Login(LoginModel model)
         {
-            if (string.IsNullOrWhiteSpace(model.Username)) 
-            {
-                return (false, null, null, "Username cannot be empty.");
-            }
+            if (string.IsNullOrWhiteSpace(model.Email))
+                return (Succeeded: false, Token: null, Expires: null, ErrorMessage: "Email is required");
             if (string.IsNullOrWhiteSpace(model.Password))
-            {
-                return (false, null, null, "Password cannot be empty.");
-            }
+                return (Succeeded: false, Token: null, Expires: null, ErrorMessage: "Password is required");
 
-            var user = await _userManager.FindByNameAsync(model.Username!);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+
             if (user == null)
+                return (Succeeded: false, Token: null, Expires: null, ErrorMessage: "Invalid email or password");
+
+            if (!BCrypt.Net.BCrypt.Verify(model.Password, user.Password))
+                return (Succeeded: false, Token: null, Expires: null, ErrorMessage: "Invalid email or password");
+
+            var claims = new List<Claim>
             {
-                user = await _userManager.FindByEmailAsync(model.Username!); 
-            }
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username ?? ""),
+                new Claim(ClaimTypes.Email, user.Email ?? ""),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
 
+            var secretKey = _configuration["JWT:Secret"];
+            if (string.IsNullOrEmpty(secretKey))
+                throw new Exception("JWT:Secret configuration missing");
 
-            // Ensure user is not null and password check is successful
-            if (user != null && await _userManager.CheckPasswordAsync(user, model.Password!)) 
-            {
-                var userRoles = await _userManager.GetRolesAsync(user);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-                var authClaims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, user.UserName ?? user.Email ?? string.Empty),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(ClaimTypes.NameIdentifier, user.Id ?? throw new InvalidOperationException("User ID is null for a valid user object."))
-                };
+            double tokenValidityHours = 3;
+            double.TryParse(_configuration["JWT:TokenValidityInHours"], out tokenValidityHours);
 
-                foreach (var userRole in userRoles)
-                {
-                    authClaims.Add(new Claim(ClaimTypes.Role, userRole ?? string.Empty));
-                }
+            var tokenExpiration = DateTime.UtcNow.AddHours(tokenValidityHours);
 
-                var jwtSecret = _configuration["JWT:Secret"] ?? throw new InvalidOperationException("JWT:Secret configuration is missing!");
-                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
+            var token = new JwtSecurityToken(
+                issuer: _configuration["JWT:ValidIssuer"],
+                audience: _configuration["JWT:ValidAudience"],
+                claims: claims,
+                expires: tokenExpiration,
+                signingCredentials: creds);
 
-                if (!double.TryParse(_configuration["JWT:TokenValidityInHours"], out double tokenValidityHours))
-                {
-                    tokenValidityHours = 3;
-                }
-                var tokenExpiryTime = DateTime.UtcNow.AddHours(tokenValidityHours);
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-                var issuer = _configuration["JWT:ValidIssuer"] ?? throw new InvalidOperationException("JWT:ValidIssuer configuration is missing!");
-                var audience = _configuration["JWT:ValidAudience"] ?? throw new InvalidOperationException("JWT:ValidAudience configuration is missing!");
-
-                var token = new JwtSecurityToken(
-                    issuer: issuer,
-                    audience: audience,
-                    expires: tokenExpiryTime,
-                    claims: authClaims,
-                    signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-                );
-
-                var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-
-                return (true, tokenString, tokenExpiryTime, null);
-            }
-
-            return (false, null, null, "Invalid username or password.");
+            return (Succeeded: true, Token: tokenString, Expires: tokenExpiration, ErrorMessage: null);
         }
+
+       
     }
 }

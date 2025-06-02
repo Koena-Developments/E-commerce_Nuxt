@@ -407,3 +407,4 @@ C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\obj\Debug\net9.0\refint\Au
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\obj\Debug\net9.0\AuthApi.pdb
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\obj\Debug\net9.0\AuthApi.genruntimeconfig.cache
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\obj\Debug\net9.0\ref\AuthApi.dll
+C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\BCrypt.Net-Next.dll

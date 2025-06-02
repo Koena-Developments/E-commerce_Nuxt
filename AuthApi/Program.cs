@@ -1,33 +1,19 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using AuthApi.Data;
+using AuthApi.Data; 
 using AuthApi.service;
 using AuthApi.Repository;
-
+using AuthApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using AuthApi.TFTEntities; 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// 1. Database Context Configuration (using In-Memory Database)
-// builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//     options.UseInMemoryDatabase("AuthDbInMemory"));
-
-
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-/*
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-*/
-
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddDbContext<AuthDbContext>(options => 
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AuthDbConnection")));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -35,7 +21,6 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-
 .AddJwtBearer(options =>
 {
     options.SaveToken = true;
@@ -50,7 +35,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowNuxtApp",
@@ -64,7 +48,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<IAuth, AuthService>();
 
-builder.Services.AddControllersWithViews();
+// builder.Services.AddControllersWithViews();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
