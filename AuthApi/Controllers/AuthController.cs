@@ -1,22 +1,21 @@
-using AuthApi.Models; // Brings in GlobalModels, RegisterModel, LoginModel
+using AuthApi.Models; 
 using AuthApi.Repository;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
 using System;
 using System.Text.Json;
-using AuthApi.Data; // <--- Add this using directive for ApplicationDbContext
-using Microsoft.EntityFrameworkCore; // <--- Add this for DbUpdateException
+using AuthApi.Data; 
+using Microsoft.EntityFrameworkCore; 
 
 namespace AuthApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // Inject ApplicationDbContext into the constructor
     public class AuthController(IAuth authService, ApplicationDbContext dbContext) : ControllerBase
     {
         private readonly IAuth _authService = authService;
-        private readonly ApplicationDbContext _dbContext = dbContext; // <--- Store DbContext instance
+        private readonly ApplicationDbContext _dbContext = dbContext; 
 
         private string? GetClientIpAddress()
         {
@@ -49,7 +48,6 @@ namespace AuthApi.Controllers
             };
         }
 
-        // Removed LogUserTrafficEntry method, as we're saving to DB now
 
         [HttpPost]
         [Route("register")]
@@ -149,7 +147,6 @@ namespace AuthApi.Controllers
             }
             finally
             {
-                // --- Store the traffic entry to the database ---
                 try
                 {
                     _dbContext.UserTraffic.Add(trafficEntry);
@@ -264,7 +261,6 @@ namespace AuthApi.Controllers
             }
             finally
             {
-                // --- Store the traffic entry to the database ---
                 try
                 {
                     _dbContext.UserTraffic.Add(trafficEntry);
@@ -280,10 +276,12 @@ namespace AuthApi.Controllers
                 {
                     Console.WriteLine($"ERROR: An unexpected error occurred while saving user traffic entry: {ex.Message}");
                 }
-                // -----------------------------------------------
             }
 
             return response;
         }
     }
 }
+
+
+// Scaffold-DbContext "Server=DESKTOP-5DB4IH0\SQLPAPI\\SQLEXPRESS;Database=AuthDb;TrustServerCertificate=true;Trusted_Connection=True;MultipleActiveResultSets=true" Microsoft.EntityFrameworkCore.SqlServer -OutputDir TFTEntities -force

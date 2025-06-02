@@ -26,7 +26,6 @@ namespace AuthApi.service
         /// Registers a new user
         public async Task<IdentityResult> Register(RegisterModel model)
         {
-            // For FindByNameAsync, the string argument cannot be null.
             if (string.IsNullOrWhiteSpace(model.Username))
             {
                 return IdentityResult.Failed(new IdentityError { Description = "Username cannot be empty." });
