@@ -24,12 +24,14 @@ public class UserTrafficEntry
   public string? ExceptionDetails { get; set; }
 }
         
-public class RequestDetails
-{
- public string? Method { get; set; }
-  public string? Body { get; set; }
-  public string? RequestUrl { get; set; }
-}
+ public class RequestDetails
+    {
+        public string? Method { get; set; }
+        public string? Body { get; set; }
+        public string? RequestUrl { get; set; }
+        public string? ClientIpAddress { get; set; } // Add IP address to your model
+        public DateTime Timestamp { get; set; } // Add a timestamp for when the request was processed
+    }
 }
 
 public class RegisterModel

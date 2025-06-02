@@ -1,18 +1,22 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using AuthApi.Data; 
+using AuthApi.Data;
 using AuthApi.service;
 using AuthApi.Repository;
 using AuthApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using AuthApi.TFTEntities; 
+using AuthApi.TFTEntities;
+using AuthApi.Middleware;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<AuthDbContext>(options => 
+builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("AuthDbConnection")));
 
 builder.Services.AddAuthentication(options =>
@@ -48,7 +52,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<IAuth, AuthService>();
 
-// builder.Services.AddControllersWithViews();
+// builder.Services.AddControllersWithViews(); // This line was commented out in your original code
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
@@ -56,15 +60,19 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-// app.UseHttpsRedirection();
+
+// app.UseHttpsRedirection(); // This line was commented out in your original code
 app.UseRouting();
 app.UseForwardedHeaders();
 app.UseCors("AllowNuxtApp");
+
+app.useRequestLoggingMiddleware(); // <-- ADD THIS LINE
 
 app.UseAuthentication();
 app.UseAuthorization();

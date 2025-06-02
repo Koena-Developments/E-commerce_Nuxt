@@ -1,13 +1,13 @@
 using AuthApi.Models;
 using AuthApi.Repository;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
+using System.Linq; 
 using System.Threading.Tasks;
 using System;
-using System.Text.Json;
 using AuthApi.Data;
 using AuthApi.TFTEntities;
 using Microsoft.EntityFrameworkCore;
+using static AuthApi.Models.GlobalModels; 
 
 namespace AuthApi.Controllers
 {
@@ -23,65 +23,48 @@ namespace AuthApi.Controllers
             return HttpContext?.Connection?.RemoteIpAddress?.ToString();
         }
 
-        private AuthApi.Models.GlobalModels.RequestDetails GetFullRequestDetails<T>(T model)
-        {
-            string requestMethod = HttpContext?.Request?.Method ?? "UNKNOWN";
-            string requestBodyContent = string.Empty;
-
-            if (model != null)
-            {
-                try
-                {
-                    requestBodyContent = JsonSerializer.Serialize(model, new JsonSerializerOptions { WriteIndented = false });
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error serializing model to JSON in GetFullRequestDetails: {ex.Message}");
-                    requestBodyContent = "Error serializing model.";
-                }
-            }
-
-            return new AuthApi.Models.GlobalModels.RequestDetails
-            {
-                Method = requestMethod,
-                Body = requestBodyContent,
-                RequestUrl = HttpContext?.Request?.Path.ToString()
-            };
-        }
-
         [HttpPost]
         [Route("register")]
-        public async Task<AuthApi.Models.GlobalModels.returnModel> Register([FromBody] RegisterModel model)
+        public async Task<returnModel> Register([FromBody] RegisterModel model)
         {
-            var trafficEntry = new AuthApi.TFTEntities.UserTrafficDatum
+            // The middleware now handles logging the request body, IP, URL, etc.
+            // You only need to populate the UserTrafficDatum with response details
+            // and any exceptions that occur within the controller's business logic.
+
+            var trafficEntry = new UserTrafficDatum
             {
-                ClientIpAddress = GetClientIpAddress(),
+                ClientIpAddress = GetClientIpAddress(), 
                 RequestTimeStamp = DateTime.UtcNow,
-                RequestBody = GetFullRequestDetails(model).Body,
                 RequestUrl = HttpContext?.Request?.Path.ToString(),
+                RequestBody = HttpContext?.Request?.Body.ToString(),
+                // RequestBody, RequestMethod are now logged by the middleware
+                // and should ideally be stored in the UserTrafficDatum by the middleware
+                // if you want them persisted in the DB as well.
+                // For this example, we're assuming the middleware takes care of the full request log.
+                // If you *still* need it here for the DB entry, you'd need to re-read it,
+                // but the middleware has already read it, so it's less efficient.
+                // Consider adding a mechanism in your middleware to pass some of these details
+                // to the controller if needed for the DB, or have the middleware directly
+                // save the UserTrafficDatum.
                 ExceptionType = null,
                 ExceptionMessage = null,
                 ExceptionDetails = null,
                 ResponseStatusCode = 0
             };
 
-            AuthApi.Models.GlobalModels.returnModel response;
+            returnModel response;
 
             try
             {
-                string? clientIp = GetClientIpAddress();
-                var fullRequestDetails = GetFullRequestDetails(model);
-
-                Console.WriteLine($"Register Request from IP: {clientIp}");
-                Console.WriteLine($"Request Body: {fullRequestDetails.Body ?? "N/A"}");
-                Console.WriteLine($"Request Method: {fullRequestDetails.Method ?? "N/A"}");
+                // Removed redundant Console.WriteLines and GetFullRequestDetails calls
+                // as the middleware now handles this for logging.
 
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                     var modelStateErrorMessage = string.Join(" ", errors);
 
-                    response = new AuthApi.Models.GlobalModels.returnModel
+                    response = new returnModel
                     {
                         result = new
                         {
@@ -101,7 +84,7 @@ namespace AuthApi.Controllers
 
                     if (result.Success)
                     {
-                        response = new AuthApi.Models.GlobalModels.returnModel
+                        response = new returnModel
                         {
                             result = new { message = "User registered successfully!" },
                             status = true,
@@ -113,7 +96,7 @@ namespace AuthApi.Controllers
                     {
                         var errorMessages = result.ErrorMessage ?? "Registration failed.";
 
-                        response = new AuthApi.Models.GlobalModels.returnModel
+                        response = new returnModel
                         {
                             result = new { message = "Registration failed." },
                             status = false,
@@ -141,7 +124,7 @@ namespace AuthApi.Controllers
                 trafficEntry.ExceptionMessage = ex.Message;
                 trafficEntry.ExceptionDetails = ex.ToString();
 
-                response = new AuthApi.Models.GlobalModels.returnModel
+                response = new returnModel
                 {
                     result = new { message = "An unexpected error occurred during registration." },
                     status = false,
@@ -151,6 +134,7 @@ namespace AuthApi.Controllers
             }
             finally
             {
+                // This `finally` block is still crucial for saving the traffic entry to the DB.
                 try
                 {
                     _authDbContext.UserTrafficData.Add(trafficEntry);
@@ -173,37 +157,33 @@ namespace AuthApi.Controllers
 
         [HttpPost]
         [Route("login")]
-        public async Task<AuthApi.Models.GlobalModels.returnModel> Login([FromBody] LoginModel model)
+        public async Task<returnModel> Login([FromBody] LoginModel model)
         {
-            var trafficEntry = new AuthApi.TFTEntities.UserTrafficDatum
+            var trafficEntry = new UserTrafficDatum
             {
                 ClientIpAddress = GetClientIpAddress(),
                 RequestTimeStamp = DateTime.UtcNow,
-                RequestBody = GetFullRequestDetails(model).Body,
                 RequestUrl = HttpContext?.Request?.Path.ToString(),
+                // Similar to Register, the middleware handles detailed request logging.
+                // Populate exception and status code here for the DB.
                 ExceptionType = null,
                 ExceptionMessage = null,
                 ExceptionDetails = null,
                 ResponseStatusCode = 0
             };
 
-            AuthApi.Models.GlobalModels.returnModel response;
+            returnModel response;
 
             try
             {
-                string? clientIp = GetClientIpAddress();
-                var fullRequestDetails = GetFullRequestDetails(model);
-
-                Console.WriteLine($"Login Request from IP: {clientIp}");
-                Console.WriteLine($"Request Method: {fullRequestDetails.Method ?? "N/A"}");
-                Console.WriteLine($"Request Body: {fullRequestDetails.Body ?? "N/A"}");
+                // Removed redundant Console.WriteLines and GetFullRequestDetails calls.
 
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                     var modelStateErrorMessage = string.Join(" ", errors);
 
-                    response = new AuthApi.Models.GlobalModels.returnModel
+                    response = new returnModel
                     {
                         result = new
                         {
@@ -223,7 +203,7 @@ namespace AuthApi.Controllers
 
                     if (succeeded)
                     {
-                        response = new AuthApi.Models.GlobalModels.returnModel
+                        response = new returnModel
                         {
                             result = new
                             {
@@ -238,7 +218,7 @@ namespace AuthApi.Controllers
                     }
                     else
                     {
-                        response = new AuthApi.Models.GlobalModels.returnModel
+                        response = new returnModel
                         {
                             result = new { message = "Login failed." },
                             status = false,
@@ -259,7 +239,7 @@ namespace AuthApi.Controllers
                 trafficEntry.ExceptionMessage = ex.Message;
                 trafficEntry.ExceptionDetails = ex.ToString();
 
-                response = new AuthApi.Models.GlobalModels.returnModel
+                response = new returnModel
                 {
                     result = new { message = "An unexpected error occurred during login." },
                     status = false,
