@@ -1,4 +1,10 @@
-using static AuthApi.Models.GlobalModels;
+using System; // For Console.WriteLine
+using System.IO; // For MemoryStream, StreamReader, SeekOrigin
+using System.Text; // For Encoding.UTF8
+using System.Threading.Tasks; // For Task
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using static AuthApi.Models.GlobalModels; // Assuming RequestDetails is here
 
 namespace AuthApi.Middleware
 {
@@ -6,6 +12,9 @@ namespace AuthApi.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<RequestLoggingMiddleware> _logger;
+
+        // Define a constant key for HttpContext.Items to store the request body
+        public const string RequestBodyKey = "RequestBodyContent"; // Make this public for access from controllers
 
         public RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggingMiddleware> logger)
         {
@@ -17,6 +26,7 @@ namespace AuthApi.Middleware
         {
             Console.WriteLine("MIDDLE WARE!!!!!");
 
+            // Enable buffering so the request body stream can be read multiple times (by middleware and then by model binding)
             context.Request.EnableBuffering();
 
             string clientIp = GetClientIpAddress(context);
@@ -24,16 +34,18 @@ namespace AuthApi.Middleware
             string requestPath = context.Request.Path;
             string requestQueryString = context.Request.QueryString.ToString();
 
-            // Read the request body
+            // Read the request body content
             string requestBodyContent = await ReadRequestBodyContent(context);
 
-            // Construct our RequestDetails object (adapting your original structure)
+            // Store the request body content in HttpContext.Items
+            // This makes the string content accessible to controllers or other downstream middleware
+            context.Items[RequestBodyKey] = requestBodyContent;
+
             var requestDetails = new RequestDetails
             {
                 Method = requestMethod,
                 Body = requestBodyContent,
                 RequestUrl = $"{requestPath}{requestQueryString}"
-                // You could add ClientIpAddress to RequestDetails if desired
             };
 
             _logger.LogInformation(
@@ -45,18 +57,20 @@ namespace AuthApi.Middleware
             );
 
             // --- Capture Response for Logging ---
-            // Create a temporary stream to capture the response body
+            // Store the original response body stream
             var originalResponseBodyStream = context.Response.Body;
+            // Create a new memory stream to temporarily store the response body
             using var responseBody = new MemoryStream();
+            // Assign the new memory stream as the response body
             context.Response.Body = responseBody;
 
-            // --- Pass control to the next middleware in the pipeline (or the endpoint) ---
+            // Call the next middleware in the pipeline (which will eventually execute the controller action)
             await _next(context);
 
             // --- Logic AFTER the request has been processed by the next middleware/endpoint ---
 
-            // Read the captured response body
-            context.Response.Body.Seek(0, SeekOrigin.Begin); // Rewind the stream to read from the beginning
+            // Rewind the response body stream to the beginning to read its content
+            context.Response.Body.Seek(0, SeekOrigin.Begin);
             string responseBodyContent = await new StreamReader(context.Response.Body).ReadToEndAsync();
 
             // Log response details
@@ -67,10 +81,12 @@ namespace AuthApi.Middleware
                 responseBodyContent.Length > 500 ? responseBodyContent.Substring(0, 500) + "..." : responseBodyContent
             );
 
-            // Copy the captured response body back to the original response stream
-            context.Response.Body.Seek(0, SeekOrigin.Begin); // Rewind again for copying
+            // Rewind the response body stream again (important for copying to original)
+            context.Response.Body.Seek(0, SeekOrigin.Begin);
+            // Copy the content from the temporary memory stream back to the original response stream
             await responseBody.CopyToAsync(originalResponseBodyStream);
-            context.Response.Body = originalResponseBodyStream; // Restore original stream
+            // Restore the original response body stream
+            context.Response.Body = originalResponseBodyStream;
         }
 
         private string? GetClientIpAddress(HttpContext context)
@@ -82,11 +98,12 @@ namespace AuthApi.Middleware
         {
             try
             {
-                // Leave the stream open so the next middleware or controller can still read it.
-                using var reader = new StreamReader(context.Request.Body, leaveOpen: true);
+                // Leave the stream open: important so that model binding can still read it later.
+                // Added Encoding.UTF8, true (detectEncodingFromByteOrderMarks), 1024 (bufferSize), true (leaveOpen) for robustness.
+                using var reader = new StreamReader(context.Request.Body, Encoding.UTF8, true, 1024, true);
                 var body = await reader.ReadToEndAsync();
 
-                // Rewind the stream to the beginning for subsequent readers
+                // Rewind the stream to the beginning for subsequent readers (e.g., [FromBody] in controller)
                 context.Request.Body.Seek(0, SeekOrigin.Begin);
                 return body;
             }
@@ -97,13 +114,13 @@ namespace AuthApi.Middleware
             }
         }
     }
-    
-     public static class MyCustomMiddlewareExtensions
+
+    public static class MyCustomMiddlewareExtensions
+    {
+        public static IApplicationBuilder useRequestLoggingMiddleware(
+        this IApplicationBuilder builder)
         {
-            public static IApplicationBuilder useRequestLoggingMiddleware(
-            this IApplicationBuilder builder)
-            {
-                return builder.UseMiddleware<RequestLoggingMiddleware>();
-            }
+            return builder.UseMiddleware<RequestLoggingMiddleware>();
         }
+    }
 }

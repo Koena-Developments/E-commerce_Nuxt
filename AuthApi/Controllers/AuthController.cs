@@ -8,6 +8,7 @@ using AuthApi.Data;
 using AuthApi.TFTEntities;
 using Microsoft.EntityFrameworkCore;
 using static AuthApi.Models.GlobalModels; 
+using static AuthApi.Middleware.RequestLoggingMiddleware;
 
 namespace AuthApi.Controllers
 {
@@ -27,25 +28,13 @@ namespace AuthApi.Controllers
         [Route("register")]
         public async Task<returnModel> Register([FromBody] RegisterModel model)
         {
-            // The middleware now handles logging the request body, IP, URL, etc.
-            // You only need to populate the UserTrafficDatum with response details
-            // and any exceptions that occur within the controller's business logic.
-
+          string? requestBodyContent = HttpContext.Items[RequestBodyKey] as string;
             var trafficEntry = new UserTrafficDatum
             {
                 ClientIpAddress = GetClientIpAddress(), 
                 RequestTimeStamp = DateTime.UtcNow,
                 RequestUrl = HttpContext?.Request?.Path.ToString(),
-                RequestBody = HttpContext?.Request?.Body.ToString(),
-                // RequestBody, RequestMethod are now logged by the middleware
-                // and should ideally be stored in the UserTrafficDatum by the middleware
-                // if you want them persisted in the DB as well.
-                // For this example, we're assuming the middleware takes care of the full request log.
-                // If you *still* need it here for the DB entry, you'd need to re-read it,
-                // but the middleware has already read it, so it's less efficient.
-                // Consider adding a mechanism in your middleware to pass some of these details
-                // to the controller if needed for the DB, or have the middleware directly
-                // save the UserTrafficDatum.
+                RequestBody = requestBodyContent,
                 ExceptionType = null,
                 ExceptionMessage = null,
                 ExceptionDetails = null,
@@ -56,9 +45,6 @@ namespace AuthApi.Controllers
 
             try
             {
-                // Removed redundant Console.WriteLines and GetFullRequestDetails calls
-                // as the middleware now handles this for logging.
-
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
@@ -134,7 +120,6 @@ namespace AuthApi.Controllers
             }
             finally
             {
-                // This `finally` block is still crucial for saving the traffic entry to the DB.
                 try
                 {
                     _authDbContext.UserTrafficData.Add(trafficEntry);
@@ -159,13 +144,15 @@ namespace AuthApi.Controllers
         [Route("login")]
         public async Task<returnModel> Login([FromBody] LoginModel model)
         {
+
+          string? requestBodyContent = HttpContext.Items[RequestBodyKey] as string;
+
             var trafficEntry = new UserTrafficDatum
             {
                 ClientIpAddress = GetClientIpAddress(),
                 RequestTimeStamp = DateTime.UtcNow,
                 RequestUrl = HttpContext?.Request?.Path.ToString(),
-                // Similar to Register, the middleware handles detailed request logging.
-                // Populate exception and status code here for the DB.
+                RequestBody = requestBodyContent,
                 ExceptionType = null,
                 ExceptionMessage = null,
                 ExceptionDetails = null,
@@ -176,13 +163,10 @@ namespace AuthApi.Controllers
 
             try
             {
-                // Removed redundant Console.WriteLines and GetFullRequestDetails calls.
-
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                     var modelStateErrorMessage = string.Join(" ", errors);
-
                     response = new returnModel
                     {
                         result = new
