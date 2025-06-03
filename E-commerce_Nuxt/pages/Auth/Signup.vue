@@ -4,15 +4,33 @@
     <form @submit.prevent="handleRegister" class="auth-form">
       <div class="form-group">
         <label for="reg-username">Username:</label>
-        <input type="text" id="reg-username" v-model="registerData.username" required />
+        <input
+          type="text"
+          id="reg-username"
+          v-model="registerData.username"
+          required
+          :disabled="loading"
+        />
       </div>
       <div class="form-group">
         <label for="reg-email">Email:</label>
-        <input type="email" id="reg-email" v-model="registerData.email" required />
+        <input
+          type="email"
+          id="reg-email"
+          v-model="registerData.email"
+          required
+          :disabled="loading"
+        />
       </div>
       <div class="form-group">
         <label for="reg-password">Password:</label>
-        <input type="password" id="reg-password" v-model="registerData.password" required />
+        <input
+          type="password"
+          id="reg-password"
+          v-model="registerData.password"
+          required
+          :disabled="loading"
+        />
       </div>
       <button type="submit" :disabled="loading">
         {{ loading ? 'Registering...' : 'Register' }}
@@ -30,9 +48,9 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { navigateTo, useRuntimeConfig } from '#app';
 
-const router = useRouter();
+const runtimeConfig = useRuntimeConfig();
 
 const registerData = ref({
   username: '',
@@ -50,82 +68,140 @@ const handleRegister = async () => {
   successMessage.value = '';
 
   try {
-    // --- API Call Placeholder ---
-    const response = await fetch('http://localhost:5000/api/Auth/register', { // Replace with your actual API URL/proxy
+    const registerResponse = await $fetch('/api/Auth/register', {
       method: 'POST',
+      baseURL: runtimeConfig.public.apiBaseUrl,
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(registerData.value),
     });
 
-    const data = await response.json();
+    if (registerResponse && registerResponse.status === true) {
+      successMessage.value = registerResponse.result?.message || 'Registration successful! You can now log in.';
+      console.log('Registration successful:', registerResponse.result?.message);
 
-    if (response.ok) {
-      successMessage.value = data.Message || 'Registration successful!';
       setTimeout(() => {
-        router.push('/auth/login');
-      }, 2000);
+        navigateTo('/auth/login');
+      }, 1500);
+
     } else {
-      errorMessage.value = data.Message || 'Registration failed. Please try again.';
-      console.error('Registration error:', data.Message);
+      errorMessage.value = registerResponse?.error || 'Registration failed. Please try again.';
+      console.error('Registration API error:', registerResponse?.error);
     }
   } catch (error) {
     errorMessage.value = 'An unexpected error occurred. Please try again later.';
-    console.error('Network or unexpected error:', error);
+    console.error('Network or unexpected error during registration:', error);
+
+    if (error?.data?.error) {
+      errorMessage.value = error.data.error;
+      console.error('Backend error details:', error.data.error);
+    }
   } finally {
     loading.value = false;
   }
 };
+
+definePageMeta({
+  auth: false,
+  layout: 'auth'
+});
 </script>
 
 <style scoped>
-/* @import url('./login.vue');  */
-
 .auth-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 80vh;
-  padding: 20px;
-  background-color: #f0f2f5;
-}
-
-.auth-form {
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  width: 100%;
   max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
 }
 
-h2 {
+.auth-container h2 {
   text-align: center;
-  margin-bottom: 25px;
+  margin-bottom: 1.5rem;
   color: #333;
 }
 
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .form-group {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.form-group input {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.form-group input:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+
+button[type="submit"] {
+  padding: 0.75rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .error-message {
   color: #dc3545;
-  margin-top: 15px;
-  text-align: center;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin: 0;
+  font-size: 0.9rem;
 }
 
 .success-message {
-  color: #28a745;
-  margin-top: 15px;
-  text-align: center;
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin: 0;
+  font-size: 0.9rem;
 }
 
 .auth-link {
-  margin-top: 20px;
   text-align: center;
+  margin-top: 1rem;
   color: #666;
 }
 

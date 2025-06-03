@@ -52,7 +52,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<IAuth, AuthService>();
 
-// builder.Services.AddControllersWithViews(); // This line was commented out in your original code
+
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
@@ -67,12 +67,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection(); // This line was commented out in your original code
+// app.UseHttpsRedirection(); 
 app.UseRouting();
 app.UseForwardedHeaders();
 app.UseCors("AllowNuxtApp");
 
-app.useRequestLoggingMiddleware(); // <-- ADD THIS LINE
+app.useRequestLoggingMiddleware();
 
 app.UseAuthentication();
 app.UseAuthorization();

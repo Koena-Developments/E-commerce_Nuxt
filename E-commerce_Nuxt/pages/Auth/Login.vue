@@ -3,20 +3,32 @@
     <h2>Login</h2>
     <form @submit.prevent="handleLogin" class="auth-form">
       <div class="form-group">
-        <label for="username">Username or Email:</label>
-        <input type="text" id="username" v-model="loginData.username" required />
+        <label for="email">Email:</label>
+        <input 
+          type="email" 
+          id="email" 
+          v-model="loginData.email" 
+          required 
+          :disabled="loading"
+        />
       </div>
       <div class="form-group">
         <label for="password">Password:</label>
-        <input type="password" id="password" v-model="loginData.password" required />
+        <input 
+          type="password" 
+          id="password" 
+          v-model="loginData.password" 
+          required 
+          :disabled="loading"
+        />
       </div>
       <button type="submit" :disabled="loading">
         {{ loading ? 'Logging In...' : 'Login' }}
       </button>
-
+      
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
-
+      
       <p class="auth-link">
         Don't have an account? <NuxtLink to="/auth/register">Register here</NuxtLink>
       </p>
@@ -25,133 +37,159 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-const router = useRouter();
+import { ref } from 'vue'
+
+const { signIn, status } = useAuth()
+
+// Redirect if already authenticated
+if (status.value === 'authenticated') {
+  await navigateTo('/')
+}
 
 const loginData = ref({
-  username: '',
+  email: '',
   password: '',
-});
+})
 
-const loading = ref(false);
-const errorMessage = ref('');
+const loading = ref(false)
+const errorMessage = ref('')
+const successMessage = ref('')
 
-const successMessage = ref('');
-
-const {SignIn} = useAuth()
 const handleLogin = async () => {
-  loading.value = true;
-  errorMessage.value = '';
-  successMessage.value = '';
+  loading.value = true
+  errorMessage.value = ''
+  successMessage.value = ''
 
   try {
-    const { data, error, pending, status } = await useFetch('http://localhost:5000/api/Auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(loginData.value),
-    });
 
-    if (status.value === 'success' && !error.value) {
-      successMessage.value = data.value.Message || 'Login successful!';
-      console.log('Login successful! Token:', data.value.Token);
-      router.push('/');
+    const result = await signIn('credentials', {
+      email: loginData.value.email,
+      password: loginData.value.password,
+      redirect: false
+    })
+
+    if (result?.error) {
+      errorMessage.value = 'Invalid email or password. Please try again.'
+      console.error('Login error:', result.error)
+    } else if (result?.ok) {
+      successMessage.value = 'Login successful!'
+      console.log('Login successful!')
+  
+      setTimeout(async () => {
+        await navigateTo('/')
+      }, 500)
     } else {
-      errorMessage.value = error.value?.data?.Message || 'Login failed. Please try again.';
-      console.error('Login error:', error.value?.data?.Message || error.value);
+      errorMessage.value = 'Login failed. Please check your credentials.'
     }
   } catch (err) {
-    errorMessage.value = 'An unexpected error occurred. Please try again later.';
-    console.error('Network or unexpected error:', err);
+    errorMessage.value = 'An unexpected error occurred. Please try again later.'
+    console.error('Network or unexpected error:', err)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
+
+
+definePageMeta({
+  auth: false, 
+  // layout: 'auth'
+})
 </script>
+
 <style scoped>
 .auth-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 80vh;
-  padding: 20px;
-  background-color: #f0f2f5;
-}
-
-.auth-form {
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  width: 100%;
   max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
 }
 
-h2 {
+.auth-container h2 {
   text-align: center;
-  margin-bottom: 25px;
+  margin-bottom: 1.5rem;
   color: #333;
 }
 
-.form-group {
-  margin-bottom: 20px;
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: bold;
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
   color: #555;
 }
 
-input[type="text"],
-input[type="password"] {
-  width: calc(100% - 20px);
-  padding: 10px;
-  border: 1px solid #ddd;
+.form-group input {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 16px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
 }
 
-button {
-  width: 100%;
-  padding: 12px;
+.form-group input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.form-group input:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+
+button[type="submit"] {
+  padding: 0.75rem;
   background-color: #007bff;
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 18px;
+  font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
-button:hover:not(:disabled) {
+button[type="submit"]:hover:not(:disabled) {
   background-color: #0056b3;
 }
 
-button:disabled {
-  background-color: #a0c9ff;
+button[type="submit"]:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .error-message {
   color: #dc3545;
-  margin-top: 15px;
-  text-align: center;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin: 0;
+  font-size: 0.9rem;
 }
 
 .success-message {
-  color: #28a745;
-  margin-top: 15px;
-  text-align: center;
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin: 0;
+  font-size: 0.9rem;
 }
 
 .auth-link {
-  margin-top: 20px;
   text-align: center;
+  margin-top: 1rem;
   color: #666;
 }
 
