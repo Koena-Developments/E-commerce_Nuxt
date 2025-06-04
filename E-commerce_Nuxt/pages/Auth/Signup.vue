@@ -82,7 +82,7 @@ const handleRegister = async () => {
       console.log('Registration successful:', registerResponse.result?.message);
 
       setTimeout(() => {
-        navigateTo('/auth/login');
+        navigateTo('/Auth/Login');
       }, 1500);
 
     } else {

@@ -1,7 +1,6 @@
 <template>
   <div class="auth-container">
     <h2>Login</h2>
-        <p>{{status}}</p>
     <form @submit.prevent="handleLogin" class="auth-form">
       <div class="form-group">
         <label for="email">Email:</label>
@@ -41,11 +40,6 @@
 import { ref } from 'vue'
 
 const { signIn, status } = useAuth()
-
-if (status.value === 'authenticated') {
-  await navigateTo('/')
-}
-
 const loginData = ref({
   email: '',
   password: '',
@@ -61,7 +55,6 @@ const handleLogin = async () => {
   successMessage.value = ''
 
   try {
-
     const result = await signIn('credentials', {
       email: loginData.value.email,
       password: loginData.value.password,
@@ -70,7 +63,7 @@ const handleLogin = async () => {
     if (result?.error) {
       errorMessage.value = 'Invalid email or password. Please try again.'
       console.error('Login error:', result.error)
-    } else if (result?.ok) {
+    } else if (result?.ok && status.value == "authenticated") {
       successMessage.value = 'Login successful!'
       console.log('Login successful!')
   
