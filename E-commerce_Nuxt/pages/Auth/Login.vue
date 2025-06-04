@@ -67,7 +67,6 @@ const handleLogin = async () => {
       password: loginData.value.password,
       redirect: false
     })
-    console.log("LOGIN RESPONSE !!!!!!!!" + result.value)
     if (result?.error) {
       errorMessage.value = 'Invalid email or password. Please try again.'
       console.error('Login error:', result.error)

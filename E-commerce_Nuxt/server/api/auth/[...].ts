@@ -1,5 +1,5 @@
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { NuxtAuthHandler } from '#auth'
+import { NuxtAuthHandler } from '#auth';
 
 export default NuxtAuthHandler({
   secret: useRuntimeConfig().authSecret,
@@ -10,18 +10,12 @@ export default NuxtAuthHandler({
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' }
-        
       },
 
       async authorize(credentials) {
-
         try {
           const runtimeConfig = useRuntimeConfig();
-          const loginUrl = `${runtimeConfig.public.apiBaseUrl}/api/Auth/login`; 
-
-          console.log('AuthHandler: Attempting login for email:', credentials?.email);
-          console.log('AuthHandler: Calling backend URL:', loginUrl);
-          console.log('AuthHandler: Sending payload:', { email: credentials?.email, password: credentials?.password });
+          const loginUrl = `${runtimeConfig.public.apiBaseUrl}/api/Auth/login`;
 
           const response = await $fetch(loginUrl, {
             method: 'POST',
@@ -29,12 +23,8 @@ export default NuxtAuthHandler({
               email: credentials?.email,
               password: credentials?.password
             }
-
           });
 
-          const user = await response;
-          console.log("YEAAAAAHHHH "+user.value)
-          console.log("LOGIN RESPONSE !!!!!!!!" + response)
           if (response && response.status === true && response.result) {
             return {
               id: credentials?.email,
@@ -42,47 +32,44 @@ export default NuxtAuthHandler({
               name: credentials?.email?.split('@')[0],
               accessToken: response.result.token,
               tokenExpires: response.result.expires
-            }
+            };
           }
-          return null
+          return null;
         } catch (error) {
-          console.error('Authentication error:', error)
           if (error?.data?.status === false) {
-            console.error('Login failed:', error.data.error)
+            console.error('Login failed:', error.data.error);
           }
-          return null
+          return null;
         }
       }
     })
   ],
-  // callbacks: {
-  //   async jwt({ token, user }) {
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.accessToken = user.accessToken;
+        token.tokenExpires = user.tokenExpires;
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+        if (user.tokenExpires) {
+          token.exp = new Date(user.tokenExpires).getTime() / 1000;
+        }
+      } 
+      return token;
+    },
 
-  //     if (user) {
-  //       token.accessToken = user.accessToken
-  //       token.tokenExpires = user.tokenExpires
-  //       token.id = user.id
-  //       token.email = user.email
-  //       token.name = user.name
-  //     }
-  //     if (token.tokenExpires && new Date() > new Date(token.tokenExpires)) {
-  //       return null
-  //     }
-
-  //     return token
-  //   },
-
-  //   async session({ session, token }) {
-  //     if (token) {
-  //       session.accessToken = token.accessToken
-  //       session.user.id = token.id
-  //       session.user.email = token.email
-  //       session.user.name = token.name
-  //       session.tokenExpires = token.tokenExpires
-  //     }
-  //     return session
-  //   }
-  // },
+    async session({ session, token }) {
+      if (token) {
+        session.accessToken = token.accessToken;
+        session.user.id = token.id;
+        session.user.email = token.email;
+        session.user.name = token.name;
+        session.tokenExpires = token.tokenExpires;
+      }
+      return session;
+    }
+  },
 
   pages: {
     signIn: '/Auth/login',
@@ -93,4 +80,4 @@ export default NuxtAuthHandler({
     strategy: 'jwt',
     maxAge: 24 * 60 * 60,
   }
-})
+});

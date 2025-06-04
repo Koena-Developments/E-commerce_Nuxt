@@ -40,7 +40,7 @@
       <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
 
       <p class="auth-link">
-        Already have an account? <NuxtLink to="/auth/login">Login here</NuxtLink>
+        Already have an account? <NuxtLink to="/Auth/login">Login here</NuxtLink>
       </p>
     </form>
   </div>
