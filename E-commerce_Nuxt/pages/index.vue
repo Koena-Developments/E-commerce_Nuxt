@@ -1,4 +1,5 @@
 <template>
+  <hero/>
   <div
     class="page-wrapper"
     :class="{ 'filter-open': filterVisible, 'visible': visible, 'cart-open': cartVisible }"
@@ -54,6 +55,7 @@ import ProductCard from '~/components/ProductCard.vue';
 import FilterSidebar from '~/components/FilterSidebar.vue';
 import CartSidebar from '~/components/CartSideBar.vue';
 import Thefooter from '~/components/Thefooter.vue';
+import hero from '~/components/hero-section.vue';
 
 const myProductStore = useMyProductStoreStore();
 const { fakestore, searchTerm, selectedCategory, filterVisible, categories, cart, cartVisible, cartTotal, visible} = storeToRefs(myProductStore);
