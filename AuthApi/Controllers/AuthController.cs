@@ -1,14 +1,10 @@
 using AuthApi.Models;
 using AuthApi.Repository;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq; 
-using System.Threading.Tasks;
-using System;
-using AuthApi.Data;
 using AuthApi.TFTEntities;
-using Microsoft.EntityFrameworkCore;
-using static AuthApi.Models.GlobalModels; 
+using static AuthApi.Models.GlobalModels;
 using static AuthApi.Middleware.RequestLoggingMiddleware;
+using Microsoft.EntityFrameworkCore;
 
 namespace AuthApi.Controllers
 {

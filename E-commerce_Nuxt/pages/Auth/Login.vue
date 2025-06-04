@@ -1,6 +1,7 @@
 <template>
   <div class="auth-container">
     <h2>Login</h2>
+        <p>{{status}}</p>
     <form @submit.prevent="handleLogin" class="auth-form">
       <div class="form-group">
         <label for="email">Email:</label>
@@ -30,7 +31,7 @@
       <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
       
       <p class="auth-link">
-        Don't have an account? <NuxtLink to="/auth/register">Register here</NuxtLink>
+        Don't have an account? <NuxtLink to="/Auth/Signup">Register here</NuxtLink>
       </p>
     </form>
   </div>
@@ -41,7 +42,6 @@ import { ref } from 'vue'
 
 const { signIn, status } = useAuth()
 
-// Redirect if already authenticated
 if (status.value === 'authenticated') {
   await navigateTo('/')
 }
@@ -67,7 +67,7 @@ const handleLogin = async () => {
       password: loginData.value.password,
       redirect: false
     })
-
+    console.log("LOGIN RESPONSE !!!!!!!!" + result.value)
     if (result?.error) {
       errorMessage.value = 'Invalid email or password. Please try again.'
       console.error('Login error:', result.error)
@@ -92,7 +92,6 @@ const handleLogin = async () => {
 
 definePageMeta({
   auth: false, 
-  // layout: 'auth'
 })
 </script>
 

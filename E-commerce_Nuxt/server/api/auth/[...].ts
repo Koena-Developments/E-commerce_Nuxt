@@ -3,87 +3,90 @@ import { NuxtAuthHandler } from '#auth'
 
 export default NuxtAuthHandler({
   secret: useRuntimeConfig().authSecret,
-  
+
   providers: [
-    // @ts-ignore:
     CredentialsProvider.default({
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' }
+        
       },
-      
+
       async authorize(credentials) {
+
         try {
-          const response = await $fetch('/auth/login', {
+          const runtimeConfig = useRuntimeConfig();
+          const loginUrl = `${runtimeConfig.public.apiBaseUrl}/api/Auth/login`; 
+
+          console.log('AuthHandler: Attempting login for email:', credentials?.email);
+          console.log('AuthHandler: Calling backend URL:', loginUrl);
+          console.log('AuthHandler: Sending payload:', { email: credentials?.email, password: credentials?.password });
+
+          const response = await $fetch(loginUrl, {
             method: 'POST',
-            baseURL: useRuntimeConfig().apiBaseUrl,
             body: {
               email: credentials?.email,
               password: credentials?.password
             }
-          })
 
+          });
+
+          const user = await response;
+          console.log("YEAAAAAHHHH "+user.value)
+          console.log("LOGIN RESPONSE !!!!!!!!" + response)
           if (response && response.status === true && response.result) {
             return {
-              id: credentials?.email, 
+              id: credentials?.email,
               email: credentials?.email,
-              name: credentials?.email?.split('@')[0], 
+              name: credentials?.email?.split('@')[0],
               accessToken: response.result.token,
               tokenExpires: response.result.expires
             }
           }
-          
-
           return null
         } catch (error) {
           console.error('Authentication error:', error)
-          
-    
           if (error?.data?.status === false) {
             console.error('Login failed:', error.data.error)
           }
-          
           return null
         }
       }
     })
   ],
+  // callbacks: {
+  //   async jwt({ token, user }) {
 
-  callbacks: {
-    
-    async jwt({ token, user }) {
-    
-      if (user) {
-        token.accessToken = user.accessToken
-        token.tokenExpires = user.tokenExpires
-        token.id = user.id
-        token.email = user.email
-        token.name = user.name
-      }
-      
-      if (token.tokenExpires && new Date() > new Date(token.tokenExpires)) {
-        return null
-      }
-      
-      return token
-    },
-    
-    async session({ session, token }) {
-      if (token) {
-        session.accessToken = token.accessToken
-        session.user.id = token.id
-        session.user.email = token.email
-        session.user.name = token.name
-        session.tokenExpires = token.tokenExpires
-      }
-      return session
-    }
-  },
+  //     if (user) {
+  //       token.accessToken = user.accessToken
+  //       token.tokenExpires = user.tokenExpires
+  //       token.id = user.id
+  //       token.email = user.email
+  //       token.name = user.name
+  //     }
+  //     if (token.tokenExpires && new Date() > new Date(token.tokenExpires)) {
+  //       return null
+  //     }
+
+  //     return token
+  //   },
+
+  //   async session({ session, token }) {
+  //     if (token) {
+  //       session.accessToken = token.accessToken
+  //       session.user.id = token.id
+  //       session.user.email = token.email
+  //       session.user.name = token.name
+  //       session.tokenExpires = token.tokenExpires
+  //     }
+  //     return session
+  //   }
+  // },
 
   pages: {
-    signIn: '/login',
-    error: '/auth/error'
+    signIn: '/Auth/login',
+    error: '/Auth/error'
   },
 
   session: {

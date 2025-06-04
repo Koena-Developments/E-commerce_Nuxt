@@ -1,13 +1,12 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using AuthApi.Data;
 using AuthApi.service;
 using AuthApi.Repository;
-using AuthApi.Models;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using AuthApi.TFTEntities;
 using AuthApi.Middleware;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore; 
+using Microsoft.IdentityModel.Tokens; 
+using Microsoft.AspNetCore.HttpOverrides; 
 
 var builder = WebApplication.CreateBuilder(args);
 

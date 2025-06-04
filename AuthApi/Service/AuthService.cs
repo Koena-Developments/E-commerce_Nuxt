@@ -61,7 +61,7 @@ namespace AuthApi.service
             return (true, null);
         }
 
-        public async   Task<(bool Succeeded, string? Token, DateTime? Expires, string? ErrorMessage)> Login(LoginModel model)
+        public async Task<(bool Succeeded, string? Token, DateTime? Expires, string? ErrorMessage)> Login(LoginModel model)
         {
             if (string.IsNullOrWhiteSpace(model.Email))
                 return (Succeeded: false, Token: null, Expires: null, ErrorMessage: "Email is required");
@@ -69,6 +69,8 @@ namespace AuthApi.service
                 return (Succeeded: false, Token: null, Expires: null, ErrorMessage: "Password is required");
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+
+            Console.WriteLine("User DATA", user);
 
             if (user == null)
                 return (Succeeded: false, Token: null, Expires: null, ErrorMessage: "Invalid email or password");
@@ -108,6 +110,6 @@ namespace AuthApi.service
             return (Succeeded: true, Token: tokenString, Expires: tokenExpiration, ErrorMessage: null);
         }
 
-       
+
     }
 }

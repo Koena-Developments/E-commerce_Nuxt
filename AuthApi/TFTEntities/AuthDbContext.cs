@@ -25,11 +25,13 @@ public partial class AuthDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Users__3213E83FFDA695D6");
 
-
             entity.Property(e => e.CreatedAt)
+                .HasColumnName("created_at") 
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+
             entity.Property(e => e.CreatedBy)
+                .HasColumnName("created_by") 
                 .HasMaxLength(50)
                 .IsUnicode(false);
 
@@ -42,11 +44,12 @@ public partial class AuthDbContext : DbContext
                 .IsUnicode(false);
 
             entity.Property(e => e.UpdatedAt)
+                .HasColumnName("updated_at")
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
 
             entity.Property(e => e.UpdatedBy)
-                .HasMaxLength(50)
+                .HasColumnName("updated_by") 
                 .IsUnicode(false);
 
             entity.Property(e => e.Username)
