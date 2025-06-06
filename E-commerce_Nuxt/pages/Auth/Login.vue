@@ -26,6 +26,7 @@
         {{ loading ? 'Logging In...' : 'Login' }}
       </button>
       
+      
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
       
@@ -60,10 +61,13 @@ const handleLogin = async () => {
       password: loginData.value.password,
       redirect: false
     })
+
     if (result?.error) {
       errorMessage.value = 'Invalid email or password. Please try again.'
       console.error('Login error:', result.error)
-    } else if (result?.ok && status.value == "authenticated") {
+    }
+
+    else if (result?.ok && status.value == "authenticated") {
       successMessage.value = 'Login successful!'
       console.log('Login successful!')
   

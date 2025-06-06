@@ -4,19 +4,49 @@ using AuthApi.Repository;
 using AuthApi.TFTEntities;
 using AuthApi.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore; 
-using Microsoft.IdentityModel.Tokens; 
-using Microsoft.AspNetCore.HttpOverrides; 
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(option =>
+{
+    option.SwaggerDoc("v1", new OpenApiInfo { Title = "AuthApi", Version = "v1" });
+
+    option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header, 
+        Description = "Please enter a valid JWT token into the text input below. Example: 'Bearer YOUR_TOKEN_HERE'",
+        Name = "Authorization", 
+        Type = SecuritySchemeType.Http, 
+        BearerFormat = "JWT", 
+        Scheme = "Bearer" 
+    });
+
+    option.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer" 
+                }
+            },
+            new string[]{}
+        }
+    });
+});
+
 
 builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AuthDbConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AuthDbConnection"))); 
 
 builder.Services.AddAuthentication(options =>
 {
@@ -32,6 +62,9 @@ builder.Services.AddAuthentication(options =>
     {
         ValidateIssuer = true,
         ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true, 
+
         ValidAudience = builder.Configuration["JWT:ValidAudience"],
         ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
@@ -45,12 +78,12 @@ builder.Services.AddCors(options =>
         {
             policy.WithOrigins("http://localhost:3000")
                     .AllowAnyHeader()
-                    .AllowAnyMethod();
+                    .AllowAnyMethod()
+                    .AllowCredentials();
         });
 });
 
 builder.Services.AddScoped<IAuth, AuthService>();
-
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -59,19 +92,19 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(); 
 }
 
-// app.UseHttpsRedirection(); 
+// app.UseHttpsRedirection();
 app.UseRouting();
-app.UseForwardedHeaders();
-app.UseCors("AllowNuxtApp");
+app.UseForwardedHeaders(); 
+app.UseCors("AllowNuxtApp"); 
 
-app.useRequestLoggingMiddleware();
+app.useRequestLoggingMiddleware(); 
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -15,7 +15,7 @@ export default NuxtAuthHandler({
       async authorize(credentials) {
         try {
           const runtimeConfig = useRuntimeConfig();
-          const loginUrl = `${runtimeConfig.public.apiBaseUrl}/api/Auth/login`;
+          const loginUrl = `${runtimeConfig.public.apiBaseUrl}/Auth/login`;
 
           const response = await $fetch(loginUrl, {
             method: 'POST',
@@ -25,8 +25,8 @@ export default NuxtAuthHandler({
             }
           });
 
-          if (response && response.status === true && response.result) {
-            return {
+          if (response && response.status === true) {
+            return  {
               id: credentials?.email,
               email: credentials?.email,
               name: credentials?.email?.split('@')[0],

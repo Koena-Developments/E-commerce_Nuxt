@@ -29,9 +29,19 @@ public class UserTrafficEntry
         public string? Method { get; set; }
         public string? Body { get; set; }
         public string? RequestUrl { get; set; }
-        public string? ClientIpAddress { get; set; } // Add IP address to your model
-        public DateTime Timestamp { get; set; } // Add a timestamp for when the request was processed
+        public string? ClientIpAddress { get; set; } 
+        public DateTime Timestamp { get; set; }
     }
+
+
+    public class UserProfileDto
+{
+  public long Id {get;set;}
+  public string? Username {get;set;}
+  public string? Email {get;set;}
+  public DateTime CreatedAt {get; set;}
+}
+
 }
 
 public class RegisterModel
@@ -46,4 +56,13 @@ public class LoginModel
 public string? Email { get; set; }
 public string? Password { get; set; }
 }
+
+// public class UserProfileDto
+// {
+//   public long Id {get;set;}
+//   public string? Username {get;set;}
+//   public string? Email {get;set;}
+//   public DateTime CreatedAt {get; set;}
+// }
+
 }

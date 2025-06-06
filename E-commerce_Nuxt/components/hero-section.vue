@@ -1,5 +1,6 @@
 <template>
   <section class="hero-section">
+    <!-- <Logout /> -->
     <div class="hero-content">
       <h1>Discover Your Next Favorite Product</h1>
       <p>Explore a wide range of products from various categories.</p>

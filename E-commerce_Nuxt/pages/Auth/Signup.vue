@@ -68,7 +68,7 @@ const handleRegister = async () => {
   successMessage.value = '';
 
   try {
-    const registerResponse = await $fetch('/api/Auth/register', {
+    const registerResponse = await $fetch('/Auth/register', {
       method: 'POST',
       baseURL: runtimeConfig.public.apiBaseUrl,
       headers: {
@@ -80,7 +80,7 @@ const handleRegister = async () => {
     if (registerResponse && registerResponse.status === true) {
       successMessage.value = registerResponse.result?.message || 'Registration successful! You can now log in.';
       console.log('Registration successful:', registerResponse.result?.message);
-
+ console.log('Auth Status BEFORE navigateTo:', useAuth().status.value);
       setTimeout(() => {
         navigateTo('/Auth/Login');
       }, 1500);

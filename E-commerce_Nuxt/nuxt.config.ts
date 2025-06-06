@@ -5,6 +5,7 @@ export default defineNuxtConfig({
     '@fortawesome/fontawesome-free/css/all.min.css'
   ],
   modules: ['@nuxt/fonts', '@pinia/nuxt', '@sidebase/nuxt-auth'],
+
   auth: {
     baseURL: process.env.NUXT_PUBLIC_AUTH_BASE_URL,
     globalAppMiddleware: {
@@ -17,8 +18,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     authSecret: process.env.NUXT_AUTH_SECRET,
     public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL,
-      authBaseUrl: process.env.NUXT_PUBLIC_AUTH_BASE_URL 
+      apiBaseUrl: process.env.NUXT_API_BASE_URL,
+      authBaseUrl: process.env.NUXT_PUBLIC_AUTH_BASE_URL
     }
   }
 })
