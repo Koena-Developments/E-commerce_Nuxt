@@ -1,49 +1,50 @@
 <template>
-  <hero/>
-  <div
-    class="page-wrapper"
-    :class="{ 'filter-open': filterVisible, 'visible': visible, 'cart-open': cartVisible }"
-  >
-    <FilterSidebar
-      :categories="categories"
-      :selected="selectedCategory"
-      :visible="filterVisible"
-      @select="selectCategory"
-      @toggle="filterVisible = !filterVisible"
-    />
+  <div>
+    <hero/>
+    <div
+      class="page-wrapper"
+      :class="{ 'filter-open': filterVisible, 'visible': visible, 'cart-open': cartVisible }"
+    >
+      <FilterSidebar
+        :categories="categories"
+        :selected="selectedCategory"
+        :visible="filterVisible"
+        @select="selectCategory"
+        @toggle="filterVisible = !filterVisible"
+      />
 
-    <main class="content-area">
-      <div class="toolbar">
-        <button class="btn" @click="filterVisible = !filterVisible">
-          {{ filterVisible ? 'Hide Filters' : 'Show Filters' }}
-        </button>
-      </div>
+      <main class="content-area">
+        <div class="toolbar">
+          <button class="btn" @click="filterVisible = !filterVisible">
+            {{ filterVisible ? 'Hide Filters' : 'Show Filters' }}
+          </button>
+        </div>
 
-      <div class="listProduct">
-        <ProductCard
-          v-for="product in filteredProducts"
-          :key="product.id"
-          :product="product"
-          @add-to-cart="addToCart"
-          @remove-product="removeProduct"
-          @view-product="viewProduct"
-        />
-      </div>
-    </main>
+        <div class="listProduct">
+          <ProductCard
+            v-for="product in filteredProducts"
+            :key="product.id"
+            :product="product"
+            @add-to-cart="addToCart"
+            @remove-product="removeProduct"
+            @view-product="viewProduct"
+          />
+        </div>
+      </main>
 
-    <CartSidebar
-      :cart="cart"
-      :visible="cartVisible"
-      :total="cartTotal"
-      @close-cart="cartVisible = false"
-      @increase="increaseQuantity"
-      @decrease="decreaseQuantity"
-      @checkingout="checkout"
-    />
+      <CartSidebar
+        :cart="cart"
+        :visible="cartVisible"
+        :total="cartTotal"
+        @close-cart="cartVisible = false"
+        @increase="increaseQuantity"
+        @decrease="decreaseQuantity"
+        @checkingout="checkout"
+      />
 
-  </div>
+    </div>
     <Thefooter />
-
+  </div>
 </template>
 
 <script setup>
@@ -61,12 +62,10 @@ const myProductStore = useMyProductStoreStore();
 const { fakestore, searchTerm, selectedCategory, filterVisible, categories, cart, cartVisible, cartTotal, visible} = storeToRefs(myProductStore);
 const { fetchProducts, selectCategory, addToCart, removeProduct, increaseQuantity, decreaseQuantity, checkout} = myProductStore;
 
-// Fetch on mount
 onMounted(() => {
   fetchProducts();
 });
 
-// Computed: Filtered Products
 const filteredProducts = computed(() => {
   let prods = fakestore.value;
 

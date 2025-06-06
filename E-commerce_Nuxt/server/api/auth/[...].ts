@@ -24,6 +24,8 @@ export default NuxtAuthHandler({
               password: credentials?.password
             }
           });
+          console.log(credentials.email)
+          console.log(credentials.password)
 
           if (response && response.status === true) {
             return  {
@@ -43,6 +45,7 @@ export default NuxtAuthHandler({
         }
       }
     })
+
   ],
   callbacks: {
     async jwt({ token, user }) {

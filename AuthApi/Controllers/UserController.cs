@@ -5,7 +5,6 @@ using System.Security.Claims;
 using AuthApi.TFTEntities;
 using Microsoft.EntityFrameworkCore;
 using System;
-
 namespace AuthApi.Controllers
 {
     [Route("api/[controller]")]

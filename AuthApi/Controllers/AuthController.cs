@@ -10,6 +10,7 @@ namespace AuthApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    
     public class AuthController(IAuth authService, AuthDbContext authDbContext) : ControllerBase
     {
         private readonly IAuth _authService = authService;
@@ -24,10 +25,10 @@ namespace AuthApi.Controllers
         [Route("register")]
         public async Task<returnModel> Register([FromBody] RegisterModel model)
         {
-          string? requestBodyContent = HttpContext.Items[RequestBodyKey] as string;
+            string? requestBodyContent = HttpContext.Items[RequestBodyKey] as string;
             var trafficEntry = new UserTrafficDatum
             {
-                ClientIpAddress = GetClientIpAddress(), 
+                ClientIpAddress = GetClientIpAddress(),
                 RequestTimeStamp = DateTime.UtcNow,
                 RequestUrl = HttpContext?.Request?.Path.ToString(),
                 RequestBody = requestBodyContent,
@@ -141,7 +142,7 @@ namespace AuthApi.Controllers
         public async Task<returnModel> Login([FromBody] LoginModel model)
         {
 
-          string? requestBodyContent = HttpContext.Items[RequestBodyKey] as string;
+            string? requestBodyContent = HttpContext.Items[RequestBodyKey] as string;
 
             var trafficEntry = new UserTrafficDatum
             {
