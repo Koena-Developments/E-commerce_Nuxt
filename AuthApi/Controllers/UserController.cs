@@ -55,7 +55,7 @@ namespace AuthApi.Controllers
             {
                 return NotFound(new GlobalModels.returnModel
                 {
-                    status = true,
+                    status = false,
                     error = "User profile not found in Database."
                 });
             }
@@ -77,6 +77,7 @@ namespace AuthApi.Controllers
             {
                 return NotFound();
             }
+
             userEntity.Email = userprofile.Email;
             userEntity.Username = userprofile.Username;
             userEntity.Password = userprofile.password;

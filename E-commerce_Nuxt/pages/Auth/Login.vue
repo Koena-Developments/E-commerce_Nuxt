@@ -29,7 +29,7 @@
         {{ loading ? 'Logging In...' : 'Login' }}
       </button>
 
-    <Logout />  
+    <!-- <Logout />   -->
          
       
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
@@ -61,7 +61,7 @@ const successMessage = ref('')
 
 const handleLogin = async () => {
   loading.value = true
-  errorMessage.value = ''
+  errorMessage.value =''
   successMessage.value = ''
 
   try {
@@ -81,8 +81,10 @@ const handleLogin = async () => {
      else if (result?.ok && status.value == "authenticated") {
       successMessage.value = 'Login successful!'
       console.log('Login successful!')
- console.log('Auth Status BEFORE navigateTo:', useAuth().status.value);
-      setTimeout(async () => {
+      console.log('Auth Status BEFORE navigateTo:', useAuth().status.value);
+     
+ 
+ setTimeout(async () => {
         await navigateTo('/')
       }, 500)
     } else {

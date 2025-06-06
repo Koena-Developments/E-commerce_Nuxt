@@ -79,8 +79,6 @@ const handleRegister = async () => {
 
     if (registerResponse && registerResponse.status === true) {
       successMessage.value = registerResponse.result?.message || 'Registration successful! You can now log in.';
-      console.log('Registration successful:', registerResponse.result?.message);
- console.log('Auth Status BEFORE navigateTo:', useAuth().status.value);
       setTimeout(() => {
         navigateTo('/Auth/Login');
       }, 1500);
