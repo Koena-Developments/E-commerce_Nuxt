@@ -105,10 +105,7 @@ app.UseForwardedHeaders();
 app.UseCors("AllowNuxtApp"); 
 
 app.useRequestLoggingMiddleware(); 
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
