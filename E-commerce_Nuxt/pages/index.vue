@@ -91,11 +91,16 @@ const filteredProducts = computed(() => {
 </script>
 
 <style scoped>
+.body{
+  margin:0;
+  padding:0;
+}
 .page-wrapper {
   display: flex;
   position: relative;
   transition: transform 0.3s ease;
   overflow: hidden;
+  margin: 0;
 }
 
 .content-area {

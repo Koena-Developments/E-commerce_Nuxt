@@ -78,9 +78,9 @@ namespace AuthApi.Controllers
                 return NotFound();
             }
 
-            userEntity.Email = userprofile.Email;
+            // userEntity.Email = userprofile.Email;
             userEntity.Username = userprofile.Username;
-            userEntity.Password = userprofile.password;
+            userEntity.Password = userprofile.Password;
             _dbContext.SaveChanges();
 
             return Ok(new GlobalModels.UpdateUserProfileDto

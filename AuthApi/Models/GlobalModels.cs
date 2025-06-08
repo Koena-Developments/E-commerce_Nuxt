@@ -50,13 +50,12 @@ namespace AuthApi.Models
       public DateTime CreatedAt { get; set; }
     }
 
-    public class UpdateUserProfileDto
-    {
-      public string? Username { get; set; }
-      public string? Email { get; set; }
-      public string? password { get; set; }
-    }
-
+   public class UpdateUserProfileDto
+        {
+            public string? Username { get; set; }
+            public string? Email { get; set; }
+            public string? Password { get; set; } 
+        }
   }
 
 public class RegisterModel
@@ -71,13 +70,4 @@ public class LoginModel
 public string? Email { get; set; }
 public string? Password { get; set; }
 }
-
-// public class UserProfileDto
-// {
-//   public long Id {get;set;}
-//   public string? Username {get;set;}
-//   public string? Email {get;set;}
-//   public DateTime CreatedAt {get; set;}
-// }
-
 }
