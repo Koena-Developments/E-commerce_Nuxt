@@ -155,6 +155,6 @@ watch(status, (newStatus) => {
 }); 
 
 definePageMeta({
-  middleware: 'auth' 
+  // middleware: 'auth' 
 });
 </script>

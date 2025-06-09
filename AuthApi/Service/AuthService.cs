@@ -1,18 +1,18 @@
 using System;
-using System.IO; // Not strictly needed here, but often included
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity; // Not directly used for User management, but often related
+using Microsoft.AspNetCore.Identity; 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration; // For IConfiguration
-using Microsoft.IdentityModel.Tokens; // For SymmetricSecurityKey, SigningCredentials
-using System.IdentityModel.Tokens.Jwt; // For JwtSecurityToken, JwtSecurityTokenHandler
-using System.Security.Claims; // For ClaimTypes, Claim
-using System.Collections.Generic; // For List<Claim>
+using Microsoft.Extensions.Configuration; 
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims; 
+using System.Collections.Generic;
 
-using AuthApi.Models; // For RegisterModel, LoginModel, GlobalModels
-using AuthApi.Repository; // For IAuth interface
-using AuthApi.TFTEntities; // For User entity
+using AuthApi.Models;
+using AuthApi.Repository; 
+using AuthApi.TFTEntities;
 
 namespace AuthApi.service
 {
@@ -51,9 +51,9 @@ namespace AuthApi.service
                 Username = model.Username,
                 Email = model.Email,
                 Password = hashedPassword,
-                CreatedAt = DateTime.Now, // Consider DateTime.UtcNow for consistency if possible
+                CreatedAt = DateTime.Now,
                 CreatedBy = model.Username,
-                UpdatedAt = DateTime.Now, // Consider DateTime.UtcNow for consistency if possible
+                UpdatedAt = DateTime.Now,
                 UpdatedBy = model.Username
             };
 
@@ -72,13 +72,13 @@ namespace AuthApi.service
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
 
-            // Corrected Console.WriteLine to show user data properly for debugging
+            
             Console.WriteLine($"User data: {user?.Email ?? "Not Found"}");
 
             if (user == null)
                 return (Succeeded: false, Token: null, Expires: null, ErrorMessage: "Invalid email or password");
 
-            // Verify password using BCrypt
+            
             if (!BCrypt.Net.BCrypt.Verify(model.Password, user.Password))
                 return (Succeeded: false, Token: null, Expires: null, ErrorMessage: "Invalid email or password");
 
@@ -98,22 +98,17 @@ namespace AuthApi.service
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             // --- CRITICAL FIX START ---
-            // Read "TokenValidityInMinutes" from config
-            // Use GetValue<double> for direct parsing and default value
-            double tokenValidityMinutes = _configuration.GetValue<double>("JWT:TokenValidityInMinutes", 1440); // Default to 1440 minutes (24 hours)
-
-            var tokenExpiration = DateTime.UtcNow.AddMinutes(tokenValidityMinutes); // <--- Use AddMinutes
+            double tokenValidityMinutes = _configuration.GetValue<double>("JWT:TokenValidityInMinutes", 1440); 
+            var tokenExpiration = DateTime.UtcNow.AddMinutes(tokenValidityMinutes); 
+            
             // --- CRITICAL FIX END ---
-
             var token = new JwtSecurityToken(
                 issuer: _configuration["JWT:ValidIssuer"],
                 audience: _configuration["JWT:ValidAudience"],
                 claims: claims,
                 expires: tokenExpiration,
                 signingCredentials: creds);
-
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-
             return (Succeeded: true, Token: tokenString, Expires: tokenExpiration, ErrorMessage: null);
         }
     }
