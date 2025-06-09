@@ -1,6 +1,7 @@
 <template>
   <div class="auth-container">
     <h2>Login</h2>
+    <p>{{ status }}</p>
     <form @submit.prevent="handleLogin" class="auth-form">
       <div class="form-group">
         <label for="email">Email:</label>

@@ -2,9 +2,12 @@ using AuthApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using AuthApi.TFTEntities;
-using Microsoft.EntityFrameworkCore;
 using System;
+using System.Threading.Tasks;
+
+using AuthApi.service;
+using AuthApi.Repository;
+
 namespace AuthApi.Controllers
 {
     [Route("api/[controller]")]
@@ -12,103 +15,125 @@ namespace AuthApi.Controllers
     [Authorize]
     public class UserController : ControllerBase
     {
-        private readonly AuthDbContext _dbContext;
+        private readonly IUser _userService;
 
-        public UserController(AuthDbContext dbContext)
+        public UserController(IUser userService)
         {
-            _dbContext = dbContext;
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        }
+
+        private long? GetCurrentAuthenticatedUserId()
+        {
+            var userIDClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (long.TryParse(userIDClaim, out long userIdLong))
+            {
+                return userIdLong;
+            }
+            return null;
         }
 
         [HttpGet("profile")]
         public async Task<IActionResult> GetUserProfile()
         {
-            var userID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = GetCurrentAuthenticatedUserId();
 
-            if (String.IsNullOrEmpty(userID))
+            if (!userId.HasValue)
             {
                 return Unauthorized(new GlobalModels.returnModel
                 {
                     status = false,
-                    error = "User ID claim not found in token."
+                    error = "User ID claim not found or invalid in token."
                 });
             }
 
-            if (!long.TryParse(userID, out long userIdLong))
-            {
-                return BadRequest(new GlobalModels.returnModel
-                {
-                    status = false,
-                    error = "Invalid User Id format in token"
-                });
-            }
+            var userProfile = await _userService.GetUserProfileByIdAsync(userId.Value);
 
-            var userEntity = await _dbContext.Users
-                                             .Where(u => u.Id == userIdLong)
-                                             .Select(u => new GlobalModels.UserProfileDto
-                                             {
-                                                 Id = u.Id,
-                                                 Username = u.Username,
-                                                 Email = u.Email,
-                                                 CreatedAt = u.CreatedAt
-                                             }).FirstOrDefaultAsync();
-            if (userEntity == null)
+            if (userProfile == null)
             {
                 return NotFound(new GlobalModels.returnModel
                 {
                     status = false,
-                    error = "User profile not found in Database."
+                    error = "User profile not found."
                 });
             }
 
             return Ok(new GlobalModels.returnModel
             {
-                result = userEntity,
+                result = userProfile,
                 status = true,
                 error = string.Empty
             });
         }
 
-        [HttpPut]
-        [Route("{id:long}")]
-        public async Task<IActionResult> Updateprofile(long id, GlobalModels.UpdateUserProfileDto userprofile)
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] GlobalModels.UpdateUserProfileDto userProfileDto)
         {
-            var userEntity = await _dbContext.Users.FindAsync(id);
-            if (userEntity == null)
+            var userId = GetCurrentAuthenticatedUserId();
+
+            if (!userId.HasValue)
             {
-                return NotFound();
+                return Unauthorized(new GlobalModels.returnModel
+                {
+                    status = false,
+                    error = "Invalid or missing user authentication."
+                });
             }
 
-            // userEntity.Email = userprofile.Email;
-            userEntity.Username = userprofile.Username;
-            userEntity.Password = userprofile.Password;
-            _dbContext.SaveChanges();
+            var (success, errorMessage) = await _userService.UpdateUserProfileAsync(userId.Value, userProfileDto);
 
-            return Ok(new GlobalModels.UpdateUserProfileDto
+            if (success)
             {
-                Username = userEntity.Username,
-                Email = userEntity.Email
-            });
+                var updatedProfile = await _userService.GetUserProfileByIdAsync(userId.Value);
+                return Ok(new GlobalModels.returnModel
+                {
+                    result = updatedProfile,
+                    status = true,
+                    error = string.Empty
+                });
+            }
+            else
+            {
+                if (errorMessage == "User not found.")
+                {
+                    return NotFound(new GlobalModels.returnModel { status = false, error = errorMessage });
+                }
+                return BadRequest(new GlobalModels.returnModel { status = false, error = errorMessage });
+            }
         }
 
-
-
-        [HttpDelete]
-        // [Route("{id:long}")]
-        public async Task<IActionResult> Deleteuser(long id)
+        [HttpDelete("profile")]
+        public async Task<IActionResult> DeleteUser()
         {
-            var userEntity = await _dbContext.Users.FindAsync(id);
-            if (userEntity == null)
+            var userId = GetCurrentAuthenticatedUserId();
+
+            if (!userId.HasValue)
             {
-                return NotFound();
+                return Unauthorized(new GlobalModels.returnModel
+                {
+                    status = false,
+                    error = "Invalid or missing user authentication."
+                });
             }
-            _dbContext.Users.Remove(userEntity);
-            _dbContext.SaveChanges();
-            return Ok(new GlobalModels.DeleteUserDto
+
+            var (success, errorMessage) = await _userService.DeleteUserAsync(userId.Value);
+
+            if (success)
             {
-                result = userEntity.Email,
-                status = true,
-                message = $"Successfully deleted {userEntity.Username} {userEntity.Email}!!"
-            });
+                return Ok(new GlobalModels.returnModel
+                {
+                    status = true,
+                    result = new {  message = "User deleted successfully."},
+                    error = string.Empty,
+                });
+            }
+            else
+            {
+                if (errorMessage == "User not found.")
+                {
+                    return NotFound(new GlobalModels.returnModel { status = false, error = errorMessage });
+                }
+                return BadRequest(new GlobalModels.returnModel { status = false, error = errorMessage });
+            }
         }
     }
 }
