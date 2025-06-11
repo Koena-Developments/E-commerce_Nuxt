@@ -16,20 +16,18 @@ namespace AuthApi.Controllers
         private readonly IAuth _authService = authService;
         private readonly AuthDbContext _authDbContext = authDbContext; 
 
-
-        // --- REGISTER ENDPOINT ---
         [HttpPost]
         [Route("register")] 
-        public async Task<returnModel> Register([FromBody] RegisterModel model)
+        public async Task<GlobalModels.returnModel> Register([FromBody] GlobalModels.RegisterModel model)
         {
-            returnModel response; 
+            GlobalModels.returnModel response; 
 
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                 var modelStateErrorMessage = string.Join(" ", errors);
 
-                response = new returnModel
+                response = new GlobalModels.returnModel
                 {
                     result = new
                     {
@@ -41,11 +39,11 @@ namespace AuthApi.Controllers
             }
             else
             {
-                var result = await _authService.Register(model);
+                var serviceResponse = await _authService.Register(model);
 
-                if (result.Success)
+                if (serviceResponse.status)
                 {
-                    response = new returnModel
+                    response = new GlobalModels.returnModel
                     {
                         result = new { message = "User registered successfully!" },
                         status = true, 
@@ -54,9 +52,9 @@ namespace AuthApi.Controllers
                 }
                 else
                 {
-                    var errorMessages = result.ErrorMessage ?? "Registration failed.";
+                    var errorMessages = serviceResponse.error ?? "Registration failed.";
 
-                    response = new returnModel
+                    response = new GlobalModels.returnModel
                     {
                         result = new { message = "Registration failed." },
                         status = false, 
@@ -64,23 +62,20 @@ namespace AuthApi.Controllers
                     };
                 }
             }
-
             return response;
         }
 
-        // --- LOGIN ENDPOINT ---
         [HttpPost]
         [Route("login")] 
-        public async Task<returnModel> Login([FromBody] LoginModel model)
+        public async Task<GlobalModels.returnModel> Login([FromBody] GlobalModels.LoginModel model)
         {
-
-            returnModel response; 
+            GlobalModels.returnModel response; 
 
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                 var modelStateErrorMessage = string.Join(" ", errors);
-                response = new returnModel
+                response = new GlobalModels.returnModel
                 {
                     result = new
                     {
@@ -92,17 +87,19 @@ namespace AuthApi.Controllers
             }
             else
             {
-                var (succeeded, token, expires, errorMessage) = await _authService.Login(model);
+                var serviceResponse = await _authService.Login(model);
 
-                if (succeeded)
+                if (serviceResponse.status)
                 {
-                    response = new returnModel
+                    var loginResult = serviceResponse.result as GlobalModels.LoginReturnModel;
+
+                    response = new GlobalModels.returnModel
                     {
                         result = new
                         {
-                            message = "Login successful!",
-                            token = token,
-                            expires = expires?.ToString("o") 
+                            message = loginResult?.Message ?? "Login successful!",
+                            token = loginResult?.Token,
+                            expires = loginResult?.Expires.ToString("o") 
                         },
                         status = true,
                         error = string.Empty
@@ -110,11 +107,11 @@ namespace AuthApi.Controllers
                 }
                 else
                 {
-                    response = new returnModel
+                    response = new GlobalModels.returnModel
                     {
                         result = new { message = "Login failed." },
                         status = false,
-                        error = errorMessage ?? "Unknown login error."
+                        error = serviceResponse.error ?? "Unknown login error."
                     };
                 }
             }

@@ -1,15 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
+using System.Threading.Tasks;
 using AuthApi.Models;
-using static AuthApi.Models.GlobalModels;
 
 namespace AuthApi.Repository
 {
     public interface IAuth
     {
-        Task<(bool Success, string? ErrorMessage)> Register(RegisterModel model);
-
-        Task<(bool Succeeded, string? Token, DateTime? Expires, string? ErrorMessage)> Login(LoginModel model);
+        Task<GlobalModels.returnModel> Register(GlobalModels.RegisterModel model);
+        Task<GlobalModels.returnModel> Login(GlobalModels.LoginModel model);
     }
-
 }

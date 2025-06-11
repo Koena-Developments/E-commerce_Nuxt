@@ -7,10 +7,11 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Collections.Generic;
+using BCrypt.Net;
+
 using AuthApi.Models;
 using AuthApi.Repository;
 using AuthApi.TFTEntities;
-using BCrypt.Net;
 
 namespace AuthApi.service
 {
@@ -25,7 +26,7 @@ namespace AuthApi.service
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
-        public async Task<GlobalModels.returnModel> Register(RegisterModel model)
+        public async Task<GlobalModels.returnModel> Register(GlobalModels.RegisterModel model)
         {
             if (string.IsNullOrWhiteSpace(model.Username))
                 return new GlobalModels.returnModel { status = false, error = "Username is required" };
@@ -66,7 +67,7 @@ namespace AuthApi.service
             };
         }
 
-        public async Task<GlobalModels.returnModel> Login(LoginModel model)
+        public async Task<GlobalModels.returnModel> Login(GlobalModels.LoginModel model)
         {
             if (string.IsNullOrWhiteSpace(model.Email))
                 return new GlobalModels.returnModel { status = false, error = "Email is required" };
