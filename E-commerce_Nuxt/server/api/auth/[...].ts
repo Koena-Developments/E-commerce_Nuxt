@@ -44,6 +44,7 @@ export default NuxtAuthHandler({
     })
 
   ],
+  // take it to the top
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

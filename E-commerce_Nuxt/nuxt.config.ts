@@ -4,7 +4,8 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
   devtools: { enabled: true },
   css: [
-    '@fortawesome/fontawesome-free/css/all.min.css'
+    '@fortawesome/fontawesome-free/css/all.min.css', 
+    '~/assets/css/main.css'
   ],
   modules: [
     '@nuxt/fonts',

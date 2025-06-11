@@ -2,8 +2,8 @@
   <div class="auth-page-container">
     <div class="profile-card">
       <h1 class="card-title">My Profile Settings</h1>
-      
-      <div v-if="pending || status === 'loading'" class="loading-state">
+
+      <div v-if="loadingProfile || status === 'loading'" class="loading-state">
         <p class="loading-text">Loading profile data...</p>
         <div class="spinner"></div>
       </div>
@@ -89,7 +89,7 @@
           <span v-if="isUpdating">Saving...</span>
           <span v-else>{{ editMode ? 'Save Changes' : 'Edit Profile' }}</span>
         </button>
-        
+
         <button
           v-if="editMode"
           type="button"
@@ -110,15 +110,18 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
-import { useRuntimeConfig, navigateTo, useAsyncData } from '#app';
+import { ref, watch, onMounted } from 'vue'; 
+import { useRuntimeConfig, navigateTo } from '#app'; 
 
+
+// moving to pinia
 const userProfile = ref({
   id: '',
   username: '',
   email: '',
   createdAt: '',
 });
+// moving to pinia
 
 const editableUserProfile = ref({
   id: '',
@@ -127,65 +130,82 @@ const editableUserProfile = ref({
   password: '',
   createdAt: '',
 });
+// moving to pinia
 
 const profileError = ref(null);
-const { data: authData, status } = useAuth();
+const loadingProfile = ref(true);
+
+const { data: authData, status } = useAuth(); 
+
 const runtimeConfig = useRuntimeConfig();
+
 const editMode = ref(false);
 const isUpdating = ref(false);
 
-// Fetch user profile data
-const { data: fetchedProfile, pending, error: fetchError, refresh } = useAsyncData('userProfileData', async () => {
-  profileError.value = null;
-  if (status.value === 'authenticated' && authData.value?.accessToken) {
-    const response = await $fetch('/User/profile', {
-      method: 'GET',
-      baseURL: runtimeConfig.public.apiBaseUrl,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authData.value.accessToken}`,
-      },
-    });
+const fetchUserProfile = async () => {
+  loadingProfile.value = true; 
+  profileError.value = null; 
 
-    if (response && response.status === true && response.result) {
-      return response.result;
-    } else {
-      const apiError = response?.error || 'Failed to load profile.';
-      profileError.value = apiError;
-      if (response?.statusCode === 401 || response?.statusCode === 403) {
+  if (status.value === 'authenticated' && authData.value?.accessToken) {
+    try {
+      const response = await $fetch('/User/profile', {
+        method: 'GET',
+        baseURL: runtimeConfig.public.apiBaseUrl,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authData.value.accessToken}`,
+        },
+      });
+
+      if (response && response.status === true && response.result) {
+        userProfile.value = { ...response.result };
+        editableUserProfile.value = { ...response.result, password: '' };
+        profileError.value = null;
+      } else {
+        const apiError = response?.error || 'Failed to load profile.';
+        profileError.value = apiError;
+        if (response?.statusCode === 401 || response?.statusCode === 403) {
+          navigateTo('/Auth/login');
+        }
+      }
+    } catch (error) {
+      console.error('Profile fetch error:', error);
+      let errorMessage = 'Failed to load profile.';
+      const statusCode = error.statusCode || error.status;
+
+      if (error.data?.error) {
+        errorMessage = error.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      profileError.value = errorMessage;
+
+      if (statusCode === 401 || statusCode === 403) {
         navigateTo('/Auth/login');
       }
-      return null;
+    } finally {
+      loadingProfile.value = false; 
     }
+  } else {
+    loadingProfile.value = false; 
+    profileError.value = 'User not authenticated.';
   }
-  return null;
-},
+};
 
-{
-  watch: () => status.value === 'authenticated' && authData.value?.accessToken,
-  lazy: true,
-  server: false,
-  default: () => ({ id: '', username: '', email: '', createdAt: '' }),
-});
-
-watch(fetchedProfile, (updatedData) => {
-  if (updatedData) {
-    userProfile.value = { ...updatedData };
-     editableUserProfile.value = { ...updatedData,password: '' };
-    profileError.value = null;
-  }
-}, { immediate: true });
+onMounted(fetchUserProfile); 
 
 watch(status, (newStatus) => {
   if (newStatus === 'authenticated' && !userProfile.value.id) {
-    refresh();
+    fetchUserProfile();
   } else if (newStatus === 'unauthenticated') {
     userProfile.value = { id: '', username: '', email: '', createdAt: '' };
     editableUserProfile.value = { id: '', username: '', email: '', password: '', createdAt: '' };
     profileError.value = null;
     editMode.value = false;
+    loadingProfile.value = false; 
   }
 });
+
 
 const toggleEditMode = () => {
   editMode.value = !editMode.value;
@@ -219,7 +239,7 @@ const saveProfileChanges = async () => {
     username: editableUserProfile.value.username,
     email: editableUserProfile.value.email,
   };
-  
+
   if (editableUserProfile.value.password) {
     payload.password = editableUserProfile.value.password;
   }
@@ -242,31 +262,31 @@ const saveProfileChanges = async () => {
         userProfile.value = { ...response.result };
         editableUserProfile.value = { ...response.result, password: '' };
       }
-      
+
       if (authData.value?.refresh) {
         await authData.value.refresh();
       }
-      
+
       editMode.value = false;
       profileError.value = null;
     } else {
       profileError.value = response?.error || 'Failed to save profile changes.';
     }
-    
+
   } catch (error) {
     console.error('Profile update error:', error);
-    
+
     let errorMessage = 'Failed to update profile.';
     const statusCode = error.statusCode || error.status;
-    
+
     if (error.data?.error) {
       errorMessage = error.data.error;
     } else if (error.message) {
       errorMessage = error.message;
     }
-    
+
     profileError.value = errorMessage;
-    
+
     if (statusCode === 401 || statusCode === 403) {
       navigateTo('/Auth/login');
     }
@@ -278,12 +298,12 @@ const saveProfileChanges = async () => {
 const formatDate = (dateString) => {
   if (!dateString) return '';
   try {
-    const options = { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    const options = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     };
     return new Date(dateString).toLocaleDateString(undefined, options);
   } catch (error) {
