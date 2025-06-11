@@ -8,15 +8,15 @@ namespace AuthApi.Models
     {
       public Object result { get; set; }
       public bool status { get; set; }
-      public string error { get; set; }
+      public string? error { get; set; }
     }
 
 
     public class DeleteUserDto
     {
-      public Object? result { get; set; }
+      public Object result { get; set; }
       public bool status { get; set; }
-      public string message { get; set; }
+      public string? message { get; set; }
     }
 
     public class UserTrafficEntry
@@ -50,24 +50,34 @@ namespace AuthApi.Models
       public DateTime CreatedAt { get; set; }
     }
 
-   public class UpdateUserProfileDto
+    public class UpdateUserProfileDto
+    {
+      public string? Username { get; set; }
+      public string? Email { get; set; }
+      public string? Password { get; set; }
+    }
+
+
+
+    public class RegisterModel
+    {
+      public string? Username { get; set; }
+      public string? Email { get; set; }
+      public string? Password { get; set; }
+    }
+
+     public class LoginRequestModel 
         {
-            public string? Username { get; set; }
+            public string? Email { get; set; } 
+            public string? Password { get; set; }
+        }
+
+        public class LoginResponseModel
+        {
+            public string? Token { get; set; }
+            public string? Expires { get; set; }
             public string? Email { get; set; }
-            public string? Password { get; set; } 
+            public string? Username { get; set; } 
         }
   }
-
-public class RegisterModel
-{
-  public string? Username { get; set; }
-  public string? Email { get; set; }
-  public string? Password { get; set; }
-}
-
-public class LoginModel
-{
-public string? Email { get; set; }
-public string? Password { get; set; }
-}
 }

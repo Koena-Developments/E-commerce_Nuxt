@@ -1,12 +1,7 @@
-using AuthApi.Models;
+using static AuthApi.Models.GlobalModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using System;
-using System.Threading.Tasks;
-
-using AuthApi.service;
-using AuthApi.Repository;
+using AuthApi.Interface;
 
 namespace AuthApi.Controllers
 {
@@ -19,121 +14,33 @@ namespace AuthApi.Controllers
 
         public UserController(IUser userService)
         {
-            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _userService = userService;
         }
 
-        private long? GetCurrentAuthenticatedUserId()
-        {
-            var userIDClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (long.TryParse(userIDClaim, out long userIdLong))
-            {
-                return userIdLong;
-            }
-            return null;
-        }
+        // private int? GetCurrentAuthenticatedUserId()
+        // {
+        //     var userIDClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //     if (int.TryParse(userIDClaim, out int id))
+        //     {
+        //         return id;
+        //     }
+        //     return null;
+        // }
 
-        [HttpGet("profile")]
-        public async Task<IActionResult> GetUserProfile()
-        {
-            var userId = GetCurrentAuthenticatedUserId();
+        // GET USER PROFILE
 
-            if (!userId.HasValue)
-            {
-                return Unauthorized(new GlobalModels.returnModel
-                {
-                    status = false,
-                    error = "User ID claim not found or invalid in token."
-                });
-            }
+        [HttpGet("profile/{id:int}")]
+        public async Task<returnModel> GetUserProfile(int id) => await _userService.GetUserProfileByIdAsync(id);
 
-            var userProfile = await _userService.GetUserProfileByIdAsync(userId.Value);
+        // UPDATE USER PROFILE
 
-            if (userProfile == null)
-            {
-                return NotFound(new GlobalModels.returnModel
-                {
-                    status = false,
-                    error = "User profile not found."
-                });
-            }
+        [HttpPut("profile/{id:int}")]
+        public async Task<returnModel> UpdateProfile(int id, [FromBody] UpdateUserProfileDto userProfileDto) => await _userService.UpdateUserProfileAsync(id, userProfileDto);
 
-            return Ok(new GlobalModels.returnModel
-            {
-                result = userProfile,
-                status = true,
-                error = string.Empty
-            });
-        }
+        // DELETE USER PROFILE
 
-        [HttpPut("profile")]
-        public async Task<IActionResult> UpdateProfile([FromBody] GlobalModels.UpdateUserProfileDto userProfileDto)
-        {
-            var userId = GetCurrentAuthenticatedUserId();
+        [HttpDelete("profile/{id:int}")]
+        public async Task<returnModel> DeleteUser(int id) => await _userService.DeleteUserAsync(id);
 
-            if (!userId.HasValue)
-            {
-                return Unauthorized(new GlobalModels.returnModel
-                {
-                    status = false,
-                    error = "Invalid or missing user authentication."
-                });
-            }
-
-            var (success, errorMessage) = await _userService.UpdateUserProfileAsync(userId.Value, userProfileDto);
-
-            if (success)
-            {
-                var updatedProfile = await _userService.GetUserProfileByIdAsync(userId.Value);
-                return Ok(new GlobalModels.returnModel
-                {
-                    result = updatedProfile,
-                    status = true,
-                    error = string.Empty
-                });
-            }
-            else
-            {
-                if (errorMessage == "User not found.")
-                {
-                    return NotFound(new GlobalModels.returnModel { status = false, error = errorMessage });
-                }
-                return BadRequest(new GlobalModels.returnModel { status = false, error = errorMessage });
-            }
-        }
-
-        [HttpDelete("profile")]
-        public async Task<IActionResult> DeleteUser()
-        {
-            var userId = GetCurrentAuthenticatedUserId();
-
-            if (!userId.HasValue)
-            {
-                return Unauthorized(new GlobalModels.returnModel
-                {
-                    status = false,
-                    error = "Invalid or missing user authentication."
-                });
-            }
-
-            var (success, errorMessage) = await _userService.DeleteUserAsync(userId.Value);
-
-            if (success)
-            {
-                return Ok(new GlobalModels.returnModel
-                {
-                    status = true,
-                    result = new {  message = "User deleted successfully."},
-                    error = string.Empty,
-                });
-            }
-            else
-            {
-                if (errorMessage == "User not found.")
-                {
-                    return NotFound(new GlobalModels.returnModel { status = false, error = errorMessage });
-                }
-                return BadRequest(new GlobalModels.returnModel { status = false, error = errorMessage });
-            }
-        }
     }
 }

@@ -1,6 +1,6 @@
 using System.Text;
 using AuthApi.service;
-using AuthApi.Repository;
+using AuthApi.Interface;
 using AuthApi.TFTEntities;
 using AuthApi.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
