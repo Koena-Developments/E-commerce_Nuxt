@@ -40,7 +40,7 @@
             id="email"
             v-model="editableUserProfile.email"
             class="form-input"
-            :disabled="editMode"
+            :disabled="!editMode"
             required
           />
         </div>
@@ -110,45 +110,45 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'; 
-import { useRuntimeConfig, navigateTo } from '#app'; 
+import { ref, watch, onMounted } from 'vue';
+import { useRuntimeConfig, navigateTo } from '#app';
+import { useAuth } from '#imports';
+// import { useUserStore } from '~/stores/UserStore';
 
+// const userData = useUserStore();
 
-// moving to pinia
+// const {userProfile} = storeToRefs(useUserStore)
+
+const profileError = ref(null);
+const loadingProfile = ref(true);
+const isUpdating = ref(false);
+const editMode = ref(false);
+
+const { data: authData, status } = useAuth();
+const runtimeConfig = useRuntimeConfig();
+
 const userProfile = ref({
-  id: '',
+  id: null,
   username: '',
   email: '',
   createdAt: '',
 });
-// moving to pinia
 
 const editableUserProfile = ref({
-  id: '',
+  id: null,
   username: '',
   email: '',
   password: '',
   createdAt: '',
 });
-// moving to pinia
-
-const profileError = ref(null);
-const loadingProfile = ref(true);
-
-const { data: authData, status } = useAuth(); 
-
-const runtimeConfig = useRuntimeConfig();
-
-const editMode = ref(false);
-const isUpdating = ref(false);
 
 const fetchUserProfile = async () => {
-  loadingProfile.value = true; 
-  profileError.value = null; 
+  loadingProfile.value = true;
+  profileError.value = null;
 
   if (status.value === 'authenticated' && authData.value?.accessToken) {
     try {
-      const response = await $fetch('/User/profile', {
+      const response = await $fetch(`/User/profile`, {
         method: 'GET',
         baseURL: runtimeConfig.public.apiBaseUrl,
         headers: {
@@ -162,15 +162,15 @@ const fetchUserProfile = async () => {
         editableUserProfile.value = { ...response.result, password: '' };
         profileError.value = null;
       } else {
-        const apiError = response?.error || 'Failed to load profile.';
+        const apiError = response?.error || 'Failed to load profile. Unknown API response.';
         profileError.value = apiError;
-        if (response?.statusCode === 401 || response?.statusCode === 403) {
+        if (response?.statusCode === 401 || response?.statusCode === 403 || (error && (error.statusCode === 401 || error.statusCode === 403))) {
           navigateTo('/Auth/login');
         }
       }
     } catch (error) {
       console.error('Profile fetch error:', error);
-      let errorMessage = 'Failed to load profile.';
+      let errorMessage = 'Failed to load profile due to network or server error.';
       const statusCode = error.statusCode || error.status;
 
       if (error.data?.error) {
@@ -184,28 +184,36 @@ const fetchUserProfile = async () => {
         navigateTo('/Auth/login');
       }
     } finally {
-      loadingProfile.value = false; 
+      loadingProfile.value = false;
     }
   } else {
-    loadingProfile.value = false; 
-    profileError.value = 'User not authenticated.';
+    loadingProfile.value = false;
+    if (status.value === 'unauthenticated') {
+    } else {
+        profileError.value = 'User not authenticated or authentication data is incomplete.';
+    }
+    userProfile.value = { id: null, username: '', email: '', createdAt: '' };
+    editableUserProfile.value = { id: null, username: '', email: '', password: '', createdAt: '' };
   }
 };
 
-onMounted(fetchUserProfile); 
-
-watch(status, (newStatus) => {
-  if (newStatus === 'authenticated' && !userProfile.value.id) {
+onMounted(() => {
+  if (status.value === 'authenticated' && authData.value?.accessToken) {
     fetchUserProfile();
-  } else if (newStatus === 'unauthenticated') {
-    userProfile.value = { id: '', username: '', email: '', createdAt: '' };
-    editableUserProfile.value = { id: '', username: '', email: '', password: '', createdAt: '' };
-    profileError.value = null;
-    editMode.value = false;
-    loadingProfile.value = false; 
   }
 });
 
+watch(status, (newStatus) => {
+  if (newStatus === 'authenticated' && authData.value?.accessToken) {
+    fetchUserProfile();
+  } else if (newStatus === 'unauthenticated') {
+    userProfile.value = { id: null, username: '', email: '', createdAt: '' };
+    editableUserProfile.value = { id: null, username: '', email: '', password: '', createdAt: '' };
+    profileError.value = null;
+    editMode.value = false;
+    loadingProfile.value = false;
+  }
+}, { immediate: true });
 
 const toggleEditMode = () => {
   editMode.value = !editMode.value;
@@ -246,8 +254,15 @@ const saveProfileChanges = async () => {
 
   isUpdating.value = true;
 
+  if (status.value !== 'authenticated' || !authData.value?.accessToken) {
+    profileError.value = 'Not authenticated. Please log in.';
+    isUpdating.value = false;
+    navigateTo('/Auth/login');
+    return;
+  }
+
   try {
-    const response = await $fetch('/User/profile', {
+    const response = await $fetch(`/User/profile`, {
       method: 'PUT',
       baseURL: runtimeConfig.public.apiBaseUrl,
       headers: {
@@ -261,10 +276,15 @@ const saveProfileChanges = async () => {
       if (response.result) {
         userProfile.value = { ...response.result };
         editableUserProfile.value = { ...response.result, password: '' };
+      } else {
+        await fetchUserProfile();
       }
 
       if (authData.value?.refresh) {
-        await authData.value.refresh();
+         await authData.value.refresh();
+      } else if (authData.value && authData.value.user) {
+        authData.value.user.username = userProfile.value.username;
+        authData.value.user.email = userProfile.value.email;
       }
 
       editMode.value = false;
@@ -303,7 +323,8 @@ const formatDate = (dateString) => {
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: false
     };
     return new Date(dateString).toLocaleDateString(undefined, options);
   } catch (error) {

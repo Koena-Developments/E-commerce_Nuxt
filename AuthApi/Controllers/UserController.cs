@@ -2,45 +2,39 @@ using static AuthApi.Models.GlobalModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using AuthApi.Interface;
+using System.Security.Claims;
 
 namespace AuthApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class UserController : ControllerBase
+    public class UserController(IUser userService) : ControllerBase
     {
-        private readonly IUser _userService;
+        private readonly IUser _userService = userService;
 
-        public UserController(IUser userService)
+        private int? GetCurrentAuthenticatedUserId()
         {
-            _userService = userService;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(userIdClaim, out int id))
+            {
+            return id;
+            }
+            return null;
         }
 
-        // private int? GetCurrentAuthenticatedUserId()
-        // {
-        //     var userIDClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        //     if (int.TryParse(userIDClaim, out int id))
-        //     {
-        //         return id;
-        //     }
-        //     return null;
-        // }
-
         // GET USER PROFILE
-
-        [HttpGet("profile/{id:int}")]
-        public async Task<returnModel> GetUserProfile(int id) => await _userService.GetUserProfileByIdAsync(id);
-
+        [HttpGet("profile")]
+        public async Task<returnModel?> GetUserProfile() => await _userService.GetUserProfileByIdAsync(GetCurrentAuthenticatedUserId().Value);
+        
         // UPDATE USER PROFILE
+        [HttpPut("profile")]
+        public async Task<returnModel?> UpdateProfile([FromBody] UpdateUserProfileDto userProfileDto)=> await _userService.UpdateUserProfileAsync(GetCurrentAuthenticatedUserId().Value, userProfileDto);
 
-        [HttpPut("profile/{id:int}")]
-        public async Task<returnModel> UpdateProfile(int id, [FromBody] UpdateUserProfileDto userProfileDto) => await _userService.UpdateUserProfileAsync(id, userProfileDto);
 
         // DELETE USER PROFILE
-
-        [HttpDelete("profile/{id:int}")]
-        public async Task<returnModel> DeleteUser(int id) => await _userService.DeleteUserAsync(id);
-
+        [HttpDelete("profile")]
+        public async Task<returnModel?> DeleteUser() => await _userService.DeleteUserAsync(GetCurrentAuthenticatedUserId().Value);
+        
     }
 }

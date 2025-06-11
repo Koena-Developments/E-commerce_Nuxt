@@ -1,8 +1,20 @@
-// import { defineStore } from 'pinia';
-// import { ref, computed, watch } from 'vue';
-// import { useAuth, useRuntimeConfig, navigateTo } from '#imports';
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
-// export const useUserStore = defineStore('user', () => {
+export const useUserStore = defineStore('user', () => {
+
+const userProfile = ref({
+  id: null,
+  username: '',
+  email: '',
+  createdAt: '',
+})
+
+return{
+    userProfile
+}
+
+});
 //   const profile = ref(null); 
 //   const profile = ref<any | null>(null); 
 //   const isLoadingProfile = ref(false);
