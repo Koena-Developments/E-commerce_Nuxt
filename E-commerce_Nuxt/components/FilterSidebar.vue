@@ -14,22 +14,23 @@
         {{ category }}
       </li>
     </ul>
+
+    <div class="settings-button-wrapper">
+      <SettingsButton />
+    </div>
   </aside>
 </template>
+ 
+<script setup>
+import SettingsButton from '~/components/UIComponents/settings';
 
-<script setup lang="ts">
-// import {useMyProductStoreStore} from '~/stores/productStore'
+defineProps({
+  categories: Array,
+  selected: String,
+  visible: Boolean
+});
 
-// const myProductStore = useMyProductStoreStore()
-// const { visible, categories, selectedCategory: selected } = storeToRefs(myProductStore)
-
-defineProps<{
-  categories: string[]
-  selected: string
-  visible: boolean
-}>()
-
-defineEmits(['select', 'toggle'])
+defineEmits(['select', 'toggle']);
 </script>
 
 <style scoped>
@@ -46,6 +47,8 @@ defineEmits(['select', 'toggle'])
   transform: translateX(-100%);
   transition: transform 0.3s ease;
   z-index: 999;
+  display: flex;
+  flex-direction: column;
 }
 
 .filter-sidebar.visible {
@@ -75,6 +78,9 @@ defineEmits(['select', 'toggle'])
   list-style: none;
   padding: 0;
   margin: 0;
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 20px;
 }
 
 .category-list li {
@@ -92,5 +98,11 @@ defineEmits(['select', 'toggle'])
   background: #007bff;
   color: white;
   font-weight: bold;
+}
+
+.settings-button-wrapper {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
 }
 </style>

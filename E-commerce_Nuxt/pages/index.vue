@@ -3,8 +3,7 @@
     <hero/>
     <div
       class="page-wrapper"
-      :class="{ 'filter-open': filterVisible, 'visible': visible, 'cart-open': cartVisible }"
-    >
+      :class="{ 'filter-open': filterVisible, 'visible': visible, 'cart-open': cartVisible }">
       <FilterSidebar
         :categories="categories"
         :selected="selectedCategory"
@@ -55,7 +54,8 @@ import { useMyProductStoreStore } from '~/stores/productStore';
 import ProductCard from '~/components/ProductCard.vue';
 import FilterSidebar from '~/components/FilterSidebar.vue';
 import CartSidebar from '~/components/CartSideBar.vue';
-import Thefooter from '~/components/Thefooter.vue';
+import Thefooter from '~/components/UIComponents/Thefooter.vue';
+
 import hero from '~/components/hero-section.vue';
 
 const myProductStore = useMyProductStoreStore();
@@ -91,10 +91,6 @@ const filteredProducts = computed(() => {
 </script>
 
 <style scoped>
-.body{
-  margin:0;
-  padding:0;
-}
 .page-wrapper {
   display: flex;
   position: relative;

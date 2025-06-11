@@ -1,6 +1,8 @@
 <template>
+  <NavigationBar/>
   <section class="hero-section">
-    <Logout />
+    
+
     <div class="hero-content">
       <h1>Discover Your Next Favorite Product</h1>
       <p>Explore a wide range of products from various categories.</p>
@@ -19,8 +21,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
-
+import NavigationBar from '~/components/UIComponents/Navbar.vue';
 defineProps({
   modelValue: String,
 });
@@ -40,9 +41,8 @@ defineEmits(['update:modelValue']);
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative; 
+  position: relative;
 }
-
 .hero-section::before {
   content: '';
   position: absolute;
@@ -50,7 +50,7 @@ defineEmits(['update:modelValue']);
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5); 
+  background: rgba(0, 0, 0, 0.5);
   z-index: 0;
 }
 
@@ -125,7 +125,7 @@ defineEmits(['update:modelValue']);
   }
   .search-input {
     border-radius: 10px 10px 0 0;
-    margin-bottom: 1px; 
+    margin-bottom: 1px;
   }
   .search-button {
     border-radius: 0 0 10px 10px;

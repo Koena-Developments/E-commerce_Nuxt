@@ -1,7 +1,6 @@
 <template>
   <div class="auth-container">
     <h2>Login</h2>
-    <p>{{ status }}</p>
     <form @submit.prevent="handleLogin" class="auth-form">
       <div class="form-group">
         <label for="email">Email:</label>
@@ -29,10 +28,6 @@
       <button type="submit" :disabled="loading">
         {{ loading ? 'Logging In...' : 'Login' }}
       </button>
-
-    <!-- <Logout />   -->
-         
-      
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
       
@@ -46,11 +41,9 @@
 <script setup>
 import { ref } from 'vue'
 import { navigateTo } from '#app'
-import Logout from '~/components/Logout.vue'
-
-
-
 const { signIn, status } = useAuth()
+
+
 const loginData = ref({
   email: '',
   password: '',
@@ -71,9 +64,6 @@ const handleLogin = async () => {
       password: loginData.value.password,
       redirect: false
     })
-      console.log("this is the email " + loginData.value.email)
-      console.log("this is the email " + loginData.value.password)
-      console.log("this is for testing purposes " + result)
     
       if (result?.error) {
       errorMessage.value ='Invalid email or password. Please try again.'
@@ -81,8 +71,7 @@ const handleLogin = async () => {
     }
      else if (result?.ok && status.value == "authenticated") {
       successMessage.value = 'Login successful!'
-      console.log('Login successful!')
-      console.log('Auth Status BEFORE navigateTo:', useAuth().status.value);
+  
      
  
  setTimeout(async () => {
@@ -93,7 +82,6 @@ const handleLogin = async () => {
     }
   } catch (err) {
     errorMessage.value = 'An unexpected error occurred. Please try again later.'
-    console.error('Network or unexpected error:', err)
   } finally { loading.value = false
   }
 }

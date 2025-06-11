@@ -34,7 +34,7 @@ namespace AuthApi.service
 
         public async Task<(bool Success, string? ErrorMessage)> UpdateUserProfileAsync(long userId, GlobalModels.UpdateUserProfileDto userProfileDto)
         {
-            var userEntity = await _dbContext.Users.FindAsync(userId);
+           var userEntity = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (userEntity == null)
             {
                 return (false, "User not found.");

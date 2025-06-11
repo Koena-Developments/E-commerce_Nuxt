@@ -56,6 +56,17 @@ namespace AuthApi.Models
             public string? Email { get; set; }
             public string? Password { get; set; } 
         }
+  
+  public class LoginReturnModel
+  {
+    public string Email {get; set;}
+    public long Id {get; set;}
+    public string name {get; set;}
+    public string accessToken {get; set;}
+    public string tokenExpiration {get; set;}
+  }
+  
+  
   }
 
 public class RegisterModel
@@ -67,7 +78,9 @@ public class RegisterModel
 
 public class LoginModel
 {
-public string? Email { get; set; }
-public string? Password { get; set; }
+public string Email { get; set; }
+public string Password { get; set; }
 }
+
+
 }
