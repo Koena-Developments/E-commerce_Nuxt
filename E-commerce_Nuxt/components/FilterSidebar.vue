@@ -22,7 +22,8 @@
 </template>
  
 <script setup>
-import SettingsButton from '~/components/UIComponents/settings';
+
+import SettingsButton from '~/components/UIComponents/Settingsbutton';
 
 defineProps({
   categories: Array,
@@ -105,4 +106,6 @@ defineEmits(['select', 'toggle']);
   padding-top: 10px;
   border-top: 1px solid #eee;
 }
+
 </style>
+

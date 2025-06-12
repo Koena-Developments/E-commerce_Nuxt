@@ -1,23 +1,23 @@
 <template>
-  <NavigationBar/>
-  <section class="hero-section">
-    
-
-    <div class="hero-content">
-      <h1>Discover Your Next Favorite Product</h1>
-      <p>Explore a wide range of products from various categories.</p>
-      <div class="search-bar-container">
-        <input
-          type="text"
-          placeholder="Search products..."
-          :value="modelValue"
-          @input="$emit('update:modelValue', $event.target.value)"
-          class="search-input"
-        />
-        <button class="search-button">Search</button>
+  <div>
+    <NavigationBar/>
+    <section class="hero-section">
+      <div class="hero-content">
+        <h1>Discover Your Next Favorite Product</h1>
+        <p>Explore a wide range of products from various categories.</p>
+        <div class="search-bar-container">
+          <input
+            type="text"
+            placeholder="Search products..."
+            :value="modelValue"
+            @input="$emit('update:modelValue', $event.target.value)"
+            class="search-input"
+          />
+          <button class="search-button">Search</button>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
 </template>
 
 <script setup>

@@ -1,114 +1,215 @@
 import { defineStore } from 'pinia';
-import { ref, computed, watch } from 'vue';
-import { useAuth } from '#app'; 
-import { useRuntimeConfig } from '#app';
+import { ref, watch } from 'vue';
+import { useRuntimeConfig, navigateTo } from '#app';
+import { useAuth } from '#imports';
 
 export const useUserStore = defineStore('user', () => {
-  const profile = ref(null); 
-  const isLoadingProfile = ref(false);
+  // State
   const profileError = ref(null);
+  const loadingProfile = ref(false); 
+  const isUpdating = ref(false);
+  const editMode = ref(false);
 
-  const { data: authData, status } = useAuth();
-  const runtimeConfig = useRuntimeConfig(); 
+  const userProfile = ref({
+    id: null,
+    username: '',
+    email: '',
+    createdAt: '',
+  });
 
-  const isAuthenticated = computed(() => status.value === 'authenticated');
-  const userId = computed(() => authData.value?.user?.id);
-  const userToken = computed(() => authData.value?.accessToken); 
+  const editableUserProfile = ref({
+    id: null,
+    username: '',
+    email: '',
+    password: '',
+    createdAt: '',
+  });
 
-  async function fetchUserProfile() {
-    if (!isAuthenticated.value || !userId.value || !userToken.value) {
-      profile.value = null; 
-    }
+  // Composables
+  const { data: authData, status, refresh } = useAuth();
+  const runtimeConfig = useRuntimeConfig();
 
-    isLoadingProfile.value = true;
+  // Actions
+  const fetchUserProfile = async () => {
+    loadingProfile.value = true;
     profileError.value = null;
 
-    try {
-      const response = await $fetch('/api/User/profile', {
-        method: 'GET',
-        baseURL: runtimeConfig.public.apiBaseUrl,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken.value}`,
-        },
-      });
+    if (status.value === 'authenticated' && authData.value?.accessToken) {
+      try {
+        const response = await $fetch(`/User/profile`, {
+          method: 'GET',
+          baseURL: runtimeConfig.public.apiBaseUrl,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authData.value.accessToken}`,
+          },
+        });
 
-      if (response && response.status === true && response.result) {
-        profile.value = response.result;
+        if (response && response.status === true && response.result) {
+          userProfile.value = { ...response.result };
+          editableUserProfile.value = { ...response.result, password: '' };
+          profileError.value = null;
+        } else {
+          const apiError = response?.error || 'Failed to load profile. Unknown API response.';
+          profileError.value = apiError;
+          if (response?.statusCode === 401 || response?.statusCode === 403 || (response && response.status === false && (response.error?.includes("401") || response.error?.includes("403")))) {
+             navigateTo('/Auth/login');
+          }
+        }
+      } catch (error) {
+        console.error('Profile fetch error:', error);
+        let errorMessage = 'Failed to load profile due to network or server error.';
+        const statusCode = error.statusCode || error.status;
+
+        if (error.data?.error) {
+          errorMessage = error.data.error;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        profileError.value = errorMessage;
+
+        if (statusCode === 401 || statusCode === 403) {
+          navigateTo('/Auth/login');
+        }
+      } finally {
+        loadingProfile.value = false;
+      }
+    } else {
+      loadingProfile.value = false;
+      if (status.value === 'unauthenticated') {
       } else {
-        profileError.value = response?.error || 'Failed to fetch user profile.';
+          profileError.value = 'User not authenticated or authentication data is incomplete.';
       }
-    } catch (error) {
-      profileError.value = `Error fetching profile: ${error.statusCode || error.message}`;
-      console.error('User Store - Fetch Profile Error:', error);
-      if (error.statusCode === 401 || error.statusCode === 403) {
-        navigateTo('/Auth/login');
-      }
-    } finally {
-      isLoadingProfile.value = false;
+      userProfile.value = { id: null, username: '', email: '', createdAt: '' };
+      editableUserProfile.value = { id: null, username: '', email: '', password: '', createdAt: '' };
     }
-  }
+  };
 
-  async function updateUserProfile(updatePayload) {
-    if (!isAuthenticated.value || !userId.value || !userToken.value) {
-      profileError.value = 'Not authenticated to update profile.';
-      return (false, profileError.value);
+  const toggleEditMode = () => {
+    editMode.value = !editMode.value;
+    if (editMode.value) {
+      editableUserProfile.value = { ...userProfile.value, password: '' };
+      profileError.value = null;
     }
+  };
 
-    isLoadingProfile.value = true;
+  const cancelEdit = () => {
+    editMode.value = false;
+    editableUserProfile.value = { ...userProfile.value, password: '' };
+    profileError.value = null;
+  };
+
+  const saveProfileChanges = async () => {
+    if (isUpdating.value) return;
+
     profileError.value = null;
 
+    if (!editableUserProfile.value.username) {
+      profileError.value = 'Username is required.';
+      return;
+    }
+    if (!editableUserProfile.value.email) {
+      profileError.value = 'Email is required.';
+      return;
+    }
+
+    const payload = {
+      username: editableUserProfile.value.username,
+      email: editableUserProfile.value.email,
+    };
+
+    if (editableUserProfile.value.password) {
+      payload.password = editableUserProfile.value.password;
+    }
+
+    isUpdating.value = true;
+
+    if (status.value !== 'authenticated' || !authData.value?.accessToken) {
+      profileError.value = 'Not authenticated. Please log in.';
+      isUpdating.value = false;
+      navigateTo('/Auth/login');
+      return;
+    }
+
     try {
-      const response = await $fetch(`/api/User/profile/${userId.value}`, {
+      const response = await $fetch(`/User/profile`, {
         method: 'PUT',
         baseURL: runtimeConfig.public.apiBaseUrl,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken.value}`,
+          'Authorization': `Bearer ${authData.value.accessToken}`,
         },
-        body: updatePayload,
+        body: payload,
       });
 
       if (response && response.status === true) {
         if (response.result) {
-            profile.value = response.result;
+          userProfile.value = { ...response.result };
+          editableUserProfile.value = { ...response.result, password: '' };
+        } else {
+          await fetchUserProfile();
         }
-        await authData.value.refresh();
-        return (true, null); 
+
+        if (refresh) {
+            await refresh();
+        } else if (authData.value && authData.value.user) {
+          authData.value.user.username = userProfile.value.username;
+          authData.value.user.email = userProfile.value.email;
+        }
+
+        editMode.value = false;
+        profileError.value = null;
       } else {
-        profileError.value = response?.error || 'Failed to update profile.';
-        return (false, profileError.value); 
+        profileError.value = response?.error || 'Failed to save profile changes.';
       }
+
     } catch (error) {
-      profileError.value = `Error updating profile: ${error.statusCode || error.message}`;
-      console.error('User Store - Update Profile Error:', error);
-      if (error.statusCode === 401 || error.statusCode === 403) {
-         navigateTo('/Auth/login');
+      console.error('Profile update error:', error);
+
+      let errorMessage = 'Failed to update profile.';
+      const statusCode = error.statusCode || error.status;
+
+      if (error.data?.error) {
+        errorMessage = error.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
       }
-      return (false, profileError.value); 
+
+      profileError.value = errorMessage;
+
+      if (statusCode === 401 || statusCode === 403) {
+        navigateTo('/Auth/login');
+      }
     } finally {
-      isLoadingProfile.value = false;
+      isUpdating.value = false;
     }
-  }
-
-  watch(isAuthenticated, (newStatus) => {
-    if (newStatus) {
-      fetchUserProfile(); 
-    } else {
-      profile.value = null; 
-      preferences.value = { darkMode: false, language: 'en' }; 
-      profileError.value = null;
-    }
-  }, { immediate: true }); 
-
-  return {
-    profile,
-    preferences,
-    isLoadingProfile,
-    profileError,
-    isAuthenticated,
-    userId,
-    fetchUserProfile,
-    updateUserProfile,
   };
+
+  // Watch auth status changes to trigger fetch/clear
+  watch(status, (newStatus) => {
+    if (newStatus === 'authenticated' && authData.value?.accessToken) {
+      fetchUserProfile();
+    } else if (newStatus === 'unauthenticated') {
+      userProfile.value = { id: null, username: '', email: '', createdAt: '' };
+      editableUserProfile.value = { id: null, username: '', email: '', password: '', createdAt: '' };
+      profileError.value = null;
+      loadingProfile.value = false;
+      editMode.value = false;
+      isUpdating.value = false;
+    }
+  }, { immediate: true });
+
+  // Return state and actions
+  return{
+    userProfile,
+    editableUserProfile,
+    profileError,
+    loadingProfile,
+    isUpdating,
+    editMode,
+    fetchUserProfile,
+    toggleEditMode,
+    cancelEdit,
+    saveProfileChanges
+  }
 });

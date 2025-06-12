@@ -40,7 +40,7 @@
             id="email"
             v-model="editableUserProfile.email"
             class="form-input"
-            :disabled="editMode"
+            :disabled="!editMode"
             required
           />
         </div>
@@ -110,190 +110,29 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'; 
+import { ref, watch, onMounted } from 'vue';
 import { useRuntimeConfig, navigateTo } from '#app'; 
+import { useAuth } from '#imports';
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '~/stores/UserStore'; 
 
+const userStore = useUserStore();
+const { userProfile, editableUserProfile, loadingProfile, profileError,isUpdating, editMode } = storeToRefs(userStore); 
+const { fetchUserProfile, toggleEditMode, cancelEdit, saveProfileChanges } = userStore;
+const { data: authData, status } = useAuth();
 
-// moving to pinia
-const userProfile = ref({
-  id: '',
-  username: '',
-  email: '',
-  createdAt: '',
-});
-// moving to pinia
-
-const editableUserProfile = ref({
-  id: '',
-  username: '',
-  email: '',
-  password: '',
-  createdAt: '',
-});
-// moving to pinia
-
-const profileError = ref(null);
-const loadingProfile = ref(true);
-
-const { data: authData, status } = useAuth(); 
-
-const runtimeConfig = useRuntimeConfig();
-
-const editMode = ref(false);
-const isUpdating = ref(false);
-
-const fetchUserProfile = async () => {
-  loadingProfile.value = true; 
-  profileError.value = null; 
-
+onMounted(() => {
   if (status.value === 'authenticated' && authData.value?.accessToken) {
-    try {
-      const response = await $fetch('/User/profile', {
-        method: 'GET',
-        baseURL: runtimeConfig.public.apiBaseUrl,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authData.value.accessToken}`,
-        },
-      });
-
-      if (response && response.status === true && response.result) {
-        userProfile.value = { ...response.result };
-        editableUserProfile.value = { ...response.result, password: '' };
-        profileError.value = null;
-      } else {
-        const apiError = response?.error || 'Failed to load profile.';
-        profileError.value = apiError;
-        if (response?.statusCode === 401 || response?.statusCode === 403) {
-          navigateTo('/Auth/login');
-        }
-      }
-    } catch (error) {
-      console.error('Profile fetch error:', error);
-      let errorMessage = 'Failed to load profile.';
-      const statusCode = error.statusCode || error.status;
-
-      if (error.data?.error) {
-        errorMessage = error.data.error;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      profileError.value = errorMessage;
-
-      if (statusCode === 401 || statusCode === 403) {
-        navigateTo('/Auth/login');
-      }
-    } finally {
-      loadingProfile.value = false; 
-    }
-  } else {
-    loadingProfile.value = false; 
-    profileError.value = 'User not authenticated.';
+    userStore.fetchUserProfile();
   }
-};
-
-onMounted(fetchUserProfile); 
+});
 
 watch(status, (newStatus) => {
-  if (newStatus === 'authenticated' && !userProfile.value.id) {
-    fetchUserProfile();
-  } else if (newStatus === 'unauthenticated') {
-    userProfile.value = { id: '', username: '', email: '', createdAt: '' };
-    editableUserProfile.value = { id: '', username: '', email: '', password: '', createdAt: '' };
-    profileError.value = null;
+  if (newStatus === 'unauthenticated') {
     editMode.value = false;
-    loadingProfile.value = false; 
-  }
-});
-
-
-const toggleEditMode = () => {
-  editMode.value = !editMode.value;
-  if (editMode.value) {
-    editableUserProfile.value = { ...userProfile.value, password: '' };
-    profileError.value = null;
-  }
-};
-
-const cancelEdit = () => {
-  editMode.value = false;
-  editableUserProfile.value = { ...userProfile.value, password: '' };
-  profileError.value = null;
-};
-
-const saveProfileChanges = async () => {
-  if (isUpdating.value) return;
-
-  profileError.value = null;
-
-  if (!editableUserProfile.value.username) {
-    profileError.value = 'Username is required.';
-    return;
-  }
-  if (!editableUserProfile.value.email) {
-    profileError.value = 'Email is required.';
-    return;
-  }
-
-  const payload = {
-    username: editableUserProfile.value.username,
-    email: editableUserProfile.value.email,
-  };
-
-  if (editableUserProfile.value.password) {
-    payload.password = editableUserProfile.value.password;
-  }
-
-  isUpdating.value = true;
-
-  try {
-    const response = await $fetch('/User/profile', {
-      method: 'PUT',
-      baseURL: runtimeConfig.public.apiBaseUrl,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authData.value.accessToken}`,
-      },
-      body: payload,
-    });
-
-    if (response && response.status === true) {
-      if (response.result) {
-        userProfile.value = { ...response.result };
-        editableUserProfile.value = { ...response.result, password: '' };
-      }
-
-      if (authData.value?.refresh) {
-        await authData.value.refresh();
-      }
-
-      editMode.value = false;
-      profileError.value = null;
-    } else {
-      profileError.value = response?.error || 'Failed to save profile changes.';
-    }
-
-  } catch (error) {
-    console.error('Profile update error:', error);
-
-    let errorMessage = 'Failed to update profile.';
-    const statusCode = error.statusCode || error.status;
-
-    if (error.data?.error) {
-      errorMessage = error.data.error;
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-
-    profileError.value = errorMessage;
-
-    if (statusCode === 401 || statusCode === 403) {
-      navigateTo('/Auth/login');
-    }
-  } finally {
     isUpdating.value = false;
   }
-};
+});
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
@@ -303,7 +142,8 @@ const formatDate = (dateString) => {
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: false
     };
     return new Date(dateString).toLocaleDateString(undefined, options);
   } catch (error) {
@@ -506,3 +346,4 @@ const formatDate = (dateString) => {
   cursor: not-allowed;
 }
 </style>
+

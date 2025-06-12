@@ -5,10 +5,12 @@
 </template>
 
 <script setup lang="ts">
-import { navigateTo } from '#app'; 
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const goToSettings = () => {
-  navigateTo('/settings');
+  router.push('/settings');
 };
 </script>
 
