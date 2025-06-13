@@ -25,8 +25,6 @@
             :key="product.id"
             :product="product"
             @add-to-cart="addToCart"
-            @remove-product="removeProduct"
-            @view-product="viewProduct"
           />
         </div>
       </main>
@@ -44,28 +42,37 @@
     </div>
     <Thefooter />
   </div>
+
+
+
+
+
+
 </template>
+
+
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useMyProductStoreStore } from '~/stores/productStore';
+import { useMyProductStore } from '~/stores/productStore';
 
 import ProductCard from '~/components/ProductCard.vue';
-import FilterSidebar from '~/components/FilterSidebar.vue';
-import CartSidebar from '~/components/CartSideBar.vue';
+import FilterSidebar from '~/components/UIComponents/FilterSidebar.vue';
+import CartSidebar from '~/components/UIComponents/CartSideBar.vue';
 import Thefooter from '~/components/UIComponents/Thefooter.vue';
-
 import hero from '~/components/hero-section.vue';
 
-const myProductStore = useMyProductStoreStore();
+const myProductStore = useMyProductStore();
 const { fakestore, searchTerm, selectedCategory, filterVisible, categories, cart, cartVisible, cartTotal, visible} = storeToRefs(myProductStore);
 const { fetchProducts, selectCategory, addToCart, removeProduct, increaseQuantity, decreaseQuantity, checkout} = myProductStore;
 
 onMounted(() => {
   fetchProducts();
 });
+/*
 
+*/
 const filteredProducts = computed(() => {
   let prods = fakestore.value;
 

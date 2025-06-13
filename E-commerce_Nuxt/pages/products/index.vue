@@ -7,7 +7,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import ProductShow from '~/components/ProductShowRoom.vue'
+// import ProductShow from '~/components/ProductShowRoom.vue'
 import { useMyProductStoreStore } from '~/stores/productStore'
 
 const {fetchProducts} = useMyProductStoreStore()

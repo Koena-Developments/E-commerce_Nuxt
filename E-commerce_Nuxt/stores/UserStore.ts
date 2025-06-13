@@ -4,26 +4,44 @@ import { useRuntimeConfig, navigateTo } from '#app';
 import { useAuth } from '#imports';
 
 export const useUserStore = defineStore('user', () => {
+ 
+ interface ApiResponse{
+  status?: boolean,
+  result?:any;
+  error?: string;
+  statusCode?: number;
+ }
+interface UserProfile {
+  id: string ;
+  username: string;
+  email: string;
+  createdAt: string;
+}
+
+interface EditableUserProfile extends UserProfile {
+  password: string;
+}
   // State
-  const profileError = ref(null);
+  const profileError= ref<string> ("");
   const loadingProfile = ref(false); 
   const isUpdating = ref(false);
   const editMode = ref(false);
 
-  const userProfile = ref({
-    id: null,
+  const userProfile = ref(<UserProfile>{
+    id: '',
     username: '',
     email: '',
     createdAt: '',
   });
 
-  const editableUserProfile = ref({
-    id: null,
+  const editableUserProfile = ref(<EditableUserProfile>{
+    id: '',
     username: '',
     email: '',
     password: '',
     createdAt: '',
   });
+
 
   // Composables
   const { data: authData, status, refresh } = useAuth();
@@ -32,11 +50,11 @@ export const useUserStore = defineStore('user', () => {
   // Actions
   const fetchUserProfile = async () => {
     loadingProfile.value = true;
-    profileError.value = null;
+    profileError.value = "";
 
     if (status.value === 'authenticated' && authData.value?.accessToken) {
       try {
-        const response = await $fetch(`/User/profile`, {
+        const response = await $fetch<ApiResponse>(`/User/profile`, {
           method: 'GET',
           baseURL: runtimeConfig.public.apiBaseUrl,
           headers: {
@@ -48,7 +66,7 @@ export const useUserStore = defineStore('user', () => {
         if (response && response.status === true && response.result) {
           userProfile.value = { ...response.result };
           editableUserProfile.value = { ...response.result, password: '' };
-          profileError.value = null;
+          profileError.value = "";
         } else {
           const apiError = response?.error || 'Failed to load profile. Unknown API response.';
           profileError.value = apiError;
@@ -56,7 +74,7 @@ export const useUserStore = defineStore('user', () => {
              navigateTo('/Auth/login');
           }
         }
-      } catch (error) {
+      } catch (error :any) {
         console.error('Profile fetch error:', error);
         let errorMessage = 'Failed to load profile due to network or server error.';
         const statusCode = error.statusCode || error.status;
@@ -80,8 +98,8 @@ export const useUserStore = defineStore('user', () => {
       } else {
           profileError.value = 'User not authenticated or authentication data is incomplete.';
       }
-      userProfile.value = { id: null, username: '', email: '', createdAt: '' };
-      editableUserProfile.value = { id: null, username: '', email: '', password: '', createdAt: '' };
+      userProfile.value = { id: '', username: '', email: '', createdAt: '' };
+      editableUserProfile.value = { id: '', username: '', email: '', password: '', createdAt: '' };
     }
   };
 
@@ -89,20 +107,20 @@ export const useUserStore = defineStore('user', () => {
     editMode.value = !editMode.value;
     if (editMode.value) {
       editableUserProfile.value = { ...userProfile.value, password: '' };
-      profileError.value = null;
+      profileError.value = "";
     }
   };
 
   const cancelEdit = () => {
     editMode.value = false;
     editableUserProfile.value = { ...userProfile.value, password: '' };
-    profileError.value = null;
+    profileError.value = "";
   };
 
   const saveProfileChanges = async () => {
     if (isUpdating.value) return;
 
-    profileError.value = null;
+    profileError.value = "";
 
     if (!editableUserProfile.value.username) {
       profileError.value = 'Username is required.';
@@ -113,7 +131,7 @@ export const useUserStore = defineStore('user', () => {
       return;
     }
 
-    const payload = {
+    const payload: { username: string; email: string; password?: string } = {
       username: editableUserProfile.value.username,
       email: editableUserProfile.value.email,
     };
@@ -133,7 +151,7 @@ export const useUserStore = defineStore('user', () => {
 
     try {
       // make this a separate function for a cleaner structure
-      const response = await $fetch(`/User/profile`, {
+      const response = await $fetch<ApiResponse>(`/User/profile`, {
         method: 'PUT',
         baseURL: runtimeConfig.public.apiBaseUrl,
         headers: {
@@ -154,17 +172,17 @@ export const useUserStore = defineStore('user', () => {
         if (refresh) {
             await refresh();
         } else if (authData.value && authData.value.user) {
-          authData.value.user.username = userProfile.value.username;
+          authData.value.user.name = userProfile.value.username;
           authData.value.user.email = userProfile.value.email;
         }
 
         editMode.value = false;
-        profileError.value = null;
+        profileError.value = "";
       } else {
         profileError.value = response?.error || 'Failed to save profile changes.';
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Profile update error:', error);
 
       let errorMessage = 'Failed to update profile.';
@@ -191,9 +209,9 @@ export const useUserStore = defineStore('user', () => {
     if (newStatus === 'authenticated' && authData.value?.accessToken) {
       fetchUserProfile();
     } else if (newStatus === 'unauthenticated') {
-      userProfile.value = { id: null, username: '', email: '', createdAt: '' };
-      editableUserProfile.value = { id: null, username: '', email: '', password: '', createdAt: '' };
-      profileError.value = null;
+      userProfile.value = { id: '', username: '', email: '', createdAt: '' };
+      editableUserProfile.value = { id: '', username: '', email: '', password: '', createdAt: '' };
+      profileError.value = "";
       loadingProfile.value = false;
       editMode.value = false;
       isUpdating.value = false;

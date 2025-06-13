@@ -1,5 +1,4 @@
 import { defineNuxtConfig } from 'nuxt/config';
-
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
   devtools: { enabled: true },
@@ -13,11 +12,6 @@ export default defineNuxtConfig({
     '@sidebase/nuxt-auth'
   ],
 
-  // plugins: [
-  //   '~/plugins/apiClient.js', 
-
-  // ],
-
   auth: {
     baseURL: process.env.AUTH_ORIGIN, 
     globalAppMiddleware: {
@@ -30,8 +24,10 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     authSecret: process.env.NUXT_AUTH_SECRET,
+    stripeSecretKey: process.env.STRIPE_SECRET_KEY,
     public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL,
+      stripePublishableKey: process.env.NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL
     }
   }
 });

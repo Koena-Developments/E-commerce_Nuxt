@@ -1,51 +1,63 @@
 import { ref, computed, onMounted } from 'vue'
 import { defineStore } from 'pinia'
 
-export const useMyProductStoreStore = defineStore('useProductStore', () => {
-  const fakestore= ref([])
+export const useMyProductStore = defineStore('useProductStore', () => {
+
+ interface Product{
+ id: Number;
+  title: string;
+  description: string;
+  category: string;
+  price: number;
+  image?: string;
+  quantity: number;
+ } 
+
+
+  const fakestore= ref(<Product[]>[])
   const selectedCategory = ref('All')
   const searchTerm = ref('')
-  const product = ref([])
+  const product = ref(<Product[]>[])
   const filterVisible = ref(false)
   const categories = ref(['All', 'Clothing', 'Electronics'])
-  const cart = ref([])
+  const cart = ref<Product[]>([])
   const cartVisible = ref(false)
   const visible = ref(false);
 
   const fetchProducts = async () => {
-    const { data: products, error } = await useFetch('https://fakestoreapi.com/products')
+    const { data: products, error } = await useFetch<Product[]>('https://fakestoreapi.com/products')
     if (!error.value && products.value) {
       fakestore.value = products.value.map(p => ({ ...p, quantity: 1 }))
     }
   }
   
- const selectCategory = (category) => {
+ const selectCategory = (category: string) => {
     selectedCategory.value = category
     filterVisible.value = false
   }
 // Cart actions
-const addToCart = (product) => {
+const addToCart = (product: Product) => {
   const existing = cart.value.find(p => p.id === product.id);
   if (existing) {
-    existing.quantity++;
-  } else {
-    cart.value.push({ ...product, quantity: 1 });
+    alert('Product already in cart');
+    return;
   }
+  cart.value.push({ ...product, quantity: 1 });
   cartVisible.value = true;
 };
 
-const removeProduct = (product) => {
+const removeProduct = (product: Product) => {
   cart.value = cart.value.filter(p => p.id !== product.id);
   if (!cart.value.length) cartVisible.value = false;
 };
 
-const increaseQuantity = (product) => {
+const increaseQuantity = (product: Product) => {
   product.quantity++;
 };
 
 
 
-const decreaseQuantity = (product) => {
+const decreaseQuantity = (product: Product) => {
   if (product.quantity > 1) 
     product.quantity--;
   else removeProduct(product);
@@ -60,7 +72,7 @@ const checkout = () => {
   if (!cart.value.length) {
     return alert('Cart is empty')
   }
-  const paymentLinks = {
+  const paymentLinks:Record<string, string>  = {
       1:  'https://buy.stripe.com/test_eVqaEZ6L6bgi5wMgOD1wY01', 
       2:  'https://buy.stripe.com/test_6oUeVfedy702aR655V1wY02',
       3:  'https://buy.stripe.com/test_6oU5kFglG3NQ2kA8i71wY03', 
@@ -82,12 +94,12 @@ const checkout = () => {
       19: 'https://buy.stripe.com/test_00w3cx1qMgAC3oEdCr1wY0k',
       20: 'https://buy.stripe.com/test_fZubJ36L698acZe69Z1wY0l'
     };
-  const link = paymentLinks[cart.value[0].id]
+  const link = paymentLinks[Number(cart.value[0].id)]
   if (link) {
     window.location.href = link
   } else {
-    alert(`Checked out ${cart.value.length} items totaling R${total.value.toFixed(2)}`)
-    clearCart()
+    alert(`Checked out ${cart.value.length} items totaling R${cartTotal.value}`)
+    // clearCart()
   }
 }
 

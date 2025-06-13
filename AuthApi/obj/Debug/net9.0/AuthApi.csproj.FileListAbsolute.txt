@@ -256,7 +256,6 @@ C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\Microsoft
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\Microsoft.OpenApi.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\Microsoft.SqlServer.Server.dll
-C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\Microsoft.Win32.SystemEvents.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\Mono.TextTemplating.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\Newtonsoft.Json.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\Newtonsoft.Json.Bson.dll
@@ -274,13 +273,10 @@ C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\System.Co
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\System.Composition.Runtime.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\System.Composition.TypedParts.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\System.Configuration.ConfigurationManager.dll
-C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\System.Drawing.Common.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\System.IdentityModel.Tokens.Jwt.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\System.Memory.Data.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\System.Runtime.Caching.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\System.Security.Cryptography.ProtectedData.dll
-C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\System.Security.Permissions.dll
-C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\System.Windows.Extensions.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\cs\Microsoft.CodeAnalysis.resources.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\de\Microsoft.CodeAnalysis.resources.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\es\Microsoft.CodeAnalysis.resources.dll
@@ -352,7 +348,6 @@ C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
-C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\browser-wasm\nativeassets\net9.0\e_sqlite3.a
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\linux-arm\native\libe_sqlite3.so
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\linux-arm64\native\libe_sqlite3.so
@@ -374,11 +369,7 @@ C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\win-arm64\native\e_sqlite3.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\win-x64\native\e_sqlite3.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\win-x86\native\e_sqlite3.dll
-C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\unix\lib\net6.0\System.Drawing.Common.dll
-C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\win\lib\net6.0\System.Drawing.Common.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
-C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
-C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\obj\Debug\net9.0\AuthApi.csproj.AssemblyReference.cache
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\obj\Debug\net9.0\AuthApi.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\obj\Debug\net9.0\AuthApi.AssemblyInfoInputs.cache
@@ -401,3 +392,8 @@ C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\obj\Debug\net9.0\ref\AuthA
 C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\BCrypt.Net-Next.dll
 C:\Users\thaba\Desktop\nuxt_learn\AuthApi\bin\Debug\net9.0\BCrypt.Net-Next.dll
 C:\Users\thaba\Desktop\nuxt_learn\AuthApi\bin\Debug\net9.0\Stripe.net.dll
+C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\bin\Debug\net9.0\Stripe.net.dll
+C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\obj\Debug\net9.0\rpswa.dswa.cache.json
+C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\obj\Debug\net9.0\rjimswa.dswa.cache.json
+C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\obj\Debug\net9.0\rjsmrazor.dswa.cache.json
+C:\Users\thabang\Desktop\Nuxt_Learn\nuxt_work\AuthApi\obj\Debug\net9.0\rjsmcshtml.dswa.cache.json

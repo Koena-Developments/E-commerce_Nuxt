@@ -59,7 +59,7 @@
 
 <script setup>
 import { ref, onMounted, watch,defineProps } from 'vue'
-import CartSideBar from '~/components/CartSidebar.vue'
+import CartSideBar from '~/components/UIComponents/CartSideBar.vue'
 import { useRoute } from 'vue-router'
 import { useMyProductStoreStore } from '~/stores/productStore'
 
