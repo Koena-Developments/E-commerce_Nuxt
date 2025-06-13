@@ -14,7 +14,7 @@ using static AuthApi.Models.GlobalModels;
 using AuthApi.Interface; 
 using AuthApi.TFTEntities;
 
-namespace AuthApi.service
+namespace AuthApi.Service
 {
     public class AuthService : IAuth
     {

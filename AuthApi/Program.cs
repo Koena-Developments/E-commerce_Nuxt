@@ -1,5 +1,5 @@
 using System.Text;
-using AuthApi.service;
+using AuthApi.Service;
 using AuthApi.Interface;
 using AuthApi.TFTEntities;
 using AuthApi.Middleware;
@@ -14,19 +14,22 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddScoped<IUser, UserService>(); 
+builder.Services.AddScoped<IUser, UserService>();
+builder.Services.AddScoped<ICheckout, CheckoutService>();
+builder.Services.AddScoped<IAuth, AuthService>();
+
 builder.Services.AddSwaggerGen(option =>
 {
     option.SwaggerDoc("v1", new OpenApiInfo { Title = "AuthApi", Version = "v1" });
 
     option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        In = ParameterLocation.Header, 
+        In = ParameterLocation.Header,
         Description = "Please enter a valid JWT token into the text input below. Example: 'Bearer YOUR_TOKEN_HERE'",
-        Name = "Authorization", 
-        Type = SecuritySchemeType.Http, 
-        BearerFormat = "JWT", 
-        Scheme = "Bearer" 
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
     });
 
     option.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -37,7 +40,7 @@ builder.Services.AddSwaggerGen(option =>
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer" 
+                    Id = "Bearer"
                 }
             },
             new string[]{}
@@ -47,7 +50,7 @@ builder.Services.AddSwaggerGen(option =>
 
 
 builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AuthDbConnection"))); 
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AuthDbConnection")));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -64,11 +67,12 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
-        ValidateIssuerSigningKey = true, 
+        ValidateIssuerSigningKey = true,
 
         ValidAudience = builder.Configuration["JWT:ValidAudience"],
         ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+            builder.Configuration["JWT:Secret"] ?? throw new InvalidOperationException("JWT Secret key is not configured.")))
     };
 });
 
@@ -77,14 +81,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowNuxtApp",
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000")
+            policy.WithOrigins(builder.Configuration["App:FrontendUrl"] ?? "http://localhost:3000")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
         });
 });
-
-builder.Services.AddScoped<IAuth, AuthService>();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -97,15 +99,15 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(); 
+    app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 app.UseRouting();
-app.UseForwardedHeaders(); 
-app.UseCors("AllowNuxtApp"); 
+app.UseForwardedHeaders();
+app.UseCors("AllowNuxtApp");
 
-app.useRequestLoggingMiddleware(); 
+app.useRequestLoggingMiddleware();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

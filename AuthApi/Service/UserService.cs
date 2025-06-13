@@ -7,7 +7,7 @@ using static AuthApi.Models.GlobalModels;
 using AuthApi.TFTEntities;
 using AuthApi.Interface;
 
-namespace AuthApi.service
+namespace AuthApi.Service
 {
     public class UserService : IUser
     {

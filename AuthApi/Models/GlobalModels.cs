@@ -79,5 +79,13 @@ namespace AuthApi.Models
             public string? Email { get; set; }
             public string? Username { get; set; } 
         }
+          public class CartItemDto
+        {
+            public int ProductId { get; set; }
+            public int Quantity { get; set; }
+            public decimal Price { get; set; }
+            public string? Name { get; set; }
+            public string? ImageUrl { get; set; }
+        }
   }
 }

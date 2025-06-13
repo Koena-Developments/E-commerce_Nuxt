@@ -13,6 +13,11 @@ export default defineNuxtConfig({
     '@sidebase/nuxt-auth'
   ],
 
+  // plugins: [
+  //   '~/plugins/apiClient.js', 
+
+  // ],
+
   auth: {
     baseURL: process.env.AUTH_ORIGIN, 
     globalAppMiddleware: {

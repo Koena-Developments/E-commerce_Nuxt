@@ -117,8 +117,11 @@ import { storeToRefs } from 'pinia';
 import { useUserStore } from '~/stores/UserStore'; 
 
 const userStore = useUserStore();
+
 const { userProfile, editableUserProfile, loadingProfile, profileError,isUpdating, editMode } = storeToRefs(userStore); 
 const { fetchUserProfile, toggleEditMode, cancelEdit, saveProfileChanges } = userStore;
+
+
 const { data: authData, status } = useAuth();
 
 onMounted(() => {

@@ -132,6 +132,7 @@ export const useUserStore = defineStore('user', () => {
     }
 
     try {
+      // make this a separate function for a cleaner structure
       const response = await $fetch(`/User/profile`, {
         method: 'PUT',
         baseURL: runtimeConfig.public.apiBaseUrl,
