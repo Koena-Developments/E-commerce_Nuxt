@@ -214,7 +214,7 @@ async function proceedToPayment() {
     const cartItems = cart.value.map(item => ({
       productId: Number(item.id),
       quantity: Number(item.quantity),
-      price: parseFloat(item.price), // sanitize price
+      price: parseFloat(item.price), 
       name: item.title || '',
       imageUrl: item.image || '',
     }));
@@ -222,7 +222,7 @@ async function proceedToPayment() {
 const response = await $fetch('/api/checkout/create-checkout-session', {
   baseURL: 'http://localhost:5000',
   method: 'POST',
-  body: cartItems, // ✅ just the array
+  body: cartItems, 
   headers: {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${authData.value?.accessToken}`
