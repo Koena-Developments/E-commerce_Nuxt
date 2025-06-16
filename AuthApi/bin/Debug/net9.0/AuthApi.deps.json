@@ -1547,7 +1547,14 @@
       },
       "System.Diagnostics.DiagnosticSource/8.0.1": {},
       "System.Diagnostics.EventLog/8.0.0": {},
-      "System.Formats.Asn1/9.0.5": {},
+      "System.Formats.Asn1/9.0.5": {
+        "runtime": {
+          "lib/net9.0/System.Formats.Asn1.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.525.21509"
+          }
+        }
+      },
       "System.IdentityModel.Tokens.Jwt/8.11.0": {
         "dependencies": {
           "Microsoft.IdentityModel.JsonWebTokens": "8.11.0",
@@ -1632,7 +1639,14 @@
         }
       },
       "System.Text.Encodings.Web/8.0.0": {},
-      "System.Text.Json/9.0.5": {},
+      "System.Text.Json/9.0.5": {
+        "runtime": {
+          "lib/net9.0/System.Text.Json.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.525.21509"
+          }
+        }
+      },
       "System.Threading.Channels/7.0.0": {},
       "System.Threading.Tasks.Extensions/4.6.0": {}
     }

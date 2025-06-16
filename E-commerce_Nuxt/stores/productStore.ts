@@ -95,12 +95,12 @@ const checkout = () => {
       20: 'https://buy.stripe.com/test_fZubJ36L698acZe69Z1wY0l'
     };
   const link = paymentLinks[Number(cart.value[0].id)]
-  if (link) {
-    window.location.href = link
-  } else {
-    alert(`Checked out ${cart.value.length} items totaling R${cartTotal.value}`)
-    // clearCart()
-  }
+  // if (link) {
+  //   window.location.href = link
+  // } else {
+  //   alert(`Checked out ${cart.value.length} items totaling R${cartTotal.value}`)
+  //   // clearCart()
+  // }
 }
 
   return {

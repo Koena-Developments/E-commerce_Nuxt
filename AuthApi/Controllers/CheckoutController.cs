@@ -22,15 +22,6 @@ namespace AuthApi.Controllers
         [HttpPost("create-checkout-session")]
         public async Task<returnModel> CreateCheckoutSession([FromBody] List<CartItemDto> cartItems)
         {
-            // if (cartItems == null || !cartItems.Any())
-            // {
-            //     return BadRequest(new GlobalModels.returnModel
-            //     {
-            //         status = false,
-            //         error = "Cart cannot be empty."
-            //     });
-            // }
-                // returnModel serviceResponse = 
             return await _checkoutService.CreateCheckoutSession(cartItems);;
         }
     }

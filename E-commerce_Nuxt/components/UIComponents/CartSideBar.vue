@@ -23,7 +23,7 @@
 
     <footer class="cart-footer">
       <p class="total">Total: R{{ total }}</p>
-      <button class="checkout-btn" @click="$emit('checkingout')">Checkout</button>
+     <nuxt-link to="/checkout"> <button class="checkout-btn" @click="$emit('checkingout')">Checkout</button></nuxt-link>
     </footer>
   </aside>
 </template>
